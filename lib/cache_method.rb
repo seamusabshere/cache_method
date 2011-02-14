@@ -1,0 +1,3 @@
+module CacheMethod
+  # Your code goes here...
+end
