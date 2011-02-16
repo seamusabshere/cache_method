@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
-  s.homepage    = ""
-  s.summary     = %q{Provides cache_method}
-  s.description = %q{Lets you cache methods (to memcached, redis, etc.) sort of like you can memoize them}
+  s.homepage    = "https://github.com/seamusabshere/cache_method"
+  s.summary     = %q{Lets you cache methods (to memcached, redis, etc.) sort of like you can memoize them}
+  s.description = %q{Like alias_method, but it's cache_method!}
 
   s.rubyforge_project = "cache_method"
 
