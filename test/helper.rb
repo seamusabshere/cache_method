@@ -2,45 +2,50 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 require 'test/unit'
-require 'ruby-debug'
+# require 'ruby-debug'
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'cache_method'
 
 class Test::Unit::TestCase
+  def setup
+    CacheMethod.cache.flush
+  end
 end
 
-require 'active_support'
-require 'active_support/version'
-require 'active_support/memoizable' if ActiveSupport::VERSION::MAJOR == 3
-class MemoizedRemoteBlog
-  extend ActiveSupport::Memoizable
-  attr_writer :request_count
-  def request_count
-    @request_count ||= 0
-  end
-  def get_latest_entries
-    self.request_count += 1
-    'hello world'
-  end
-  memoize :get_latest_entries
-end
-class CachedRemoteBlog
-  attr_writer :request_count
-  def to_cache_key
-    'my_blog'
-  end
-  def request_count
-    @request_count ||= 0
-  end
-  def get_latest_entries
-    self.request_count += 1
-    'hello world'
-  end
-  cache_method :get_latest_entries
-end
-
-# expects a running memcached server at localhost:11211
 require 'memcached'
-$my_cache = Memcached.new 'localhost:11211'
+require 'memcache'
+require 'redis'
+require 'dalli'
+require 'active_support/all'
+require 'active_support/cache/dalli_store'
+def random_cache
+  c = if ENV['C']
+    ENV['C'].to_i
+  else
+    rand 6
+  end
+  case c
+  when 0
+    $stderr.puts 'using memcached'
+    Memcached.new 'localhost:11211'
+  when 1
+    $stderr.puts 'using memcache-client'
+    MemCache.new ['localhost:11211']
+  when 2
+    $stderr.puts 'using dalli'
+    Dalli::Client.new ['localhost:11211']
+  when 3
+    $stderr.puts 'using dalli_store'
+    ActiveSupport::Cache::DalliStore.new ['localhost:11211']
+  when 4
+    $stderr.puts 'using memcached-rails'
+    Memcached::Rails.new 'localhost:11211'
+  when 5
+    $stderr.puts 'using Redis'
+    Redis.new
+  end
+end
+
+$my_cache = random_cache
 CacheMethod.config.client = $my_cache

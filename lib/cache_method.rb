@@ -1,39 +1,53 @@
-# require 'active_support'
-# require 'active_support/version'
-# %w{
-#   active_support/core_ext/object
-#   active_support/core_ext/class
-# }.each do |active_support_3_requirement|
-#   require active_support_3_requirement
-# end if ActiveSupport::VERSION::MAJOR == 3
-
+# See the README.rdoc for more info!
 module CacheMethod
   autoload :Config, 'cache_method/config'
-  autoload :Clearinghouse, 'cache_method/clearinghouse'
-  autoload :Client, 'cache_method/client'
+  autoload :Cache, 'cache_method/cache'
 
-  def self.config
+  def self.config #:nodoc:
     Config.instance
   end
-  def self.clearinghouse
-    Clearinghouse.instance
+  
+  def self.cache #:nodoc:
+    Cache.instance
   end
-  def self.client
-    Client.instance
-  end
-
+  
+  # All Objects, including instances and Classes, get the <tt>#clear_method_cache</tt> method.
   module InstanceMethods
-    def to_cache_key
-      to_s
-    end    
+    # Clear the cache for a particular method.
+    #
+    # Note: Remember to define <tt>#hash</tt> on any object whose instance methods might get cached.
+    #
+    # Example:
+    #     my_blog.clear_method_cache :get_latest_entries
+    def clear_method_cache(method_id)
+      ::CacheMethod.cache.delete self, method_id
+    end
   end
 
+  # All Classes (but not instances), get the <tt>.cache_method</tt> method.
   module ClassMethods
-    def cache_method(method_id)
-      original_method_id = :"_uncached_#{method_id}"
+    # Cache a method. TTL in seconds, defaults to whatever's in CacheMethod.config.default_ttl
+    #
+    # Note: Remember to define <tt>#hash</tt> on any object whose instance methods might get cached.
+    #
+    # Note 2: Check out CacheMethod.config.default_ttl... the default is only 60 seconds.
+    #
+    # Example:
+    #     class Blog
+    #       # [...]
+    #       def get_latest_entries
+    #         sleep 5
+    #       end
+    #       # [...]
+    #       cache_method :get_latest_entries
+    #       # if you wanted a different ttl...
+    #       # cache_method :get_latest_entries, 800 #seconds
+    #     end
+    def cache_method(method_id, ttl = nil)
+      original_method_id = "_uncached_#{method_id}"
       alias_method original_method_id, method_id
       define_method method_id do |*args|
-        ::CacheMethod.clearinghouse.mediate to_cache_key, method_id, *args do
+        ::CacheMethod.cache.fetch self, method_id, ttl, *args do
           send original_method_id, *args
         end
       end
@@ -42,6 +56,6 @@ module CacheMethod
 end
 
 unless ::Object.method_defined? :cache_method
-  ::Object.extend ::CacheMethod::ClassMethods
   ::Object.send :include, ::CacheMethod::InstanceMethods
+  ::Object.extend ::CacheMethod::ClassMethods
 end
