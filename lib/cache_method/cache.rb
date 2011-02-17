@@ -6,11 +6,7 @@ module CacheMethod
     autoload :Epoch, 'cache_method/cache/epoch'
     
     include ::Singleton
-    
-    def flush
-      bare_storage.send %w{ flush flush_all clear flushdb }.detect { |c| bare_storage.respond_to? c }
-    end
-    
+        
     def fetch(obj, method_id, ttl, *args)
       k = Key.new :obj => obj, :method_id => method_id, :args => args
       if cached_v = get(k.to_s)
