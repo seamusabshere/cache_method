@@ -42,17 +42,17 @@ And clear them too
 
 == Configuration (and supported cache clients)
 
-You need to set a client that will be used to access the cache:
+You need to set where the cache will be stored:
 
-    CacheMethod.config.client = Memcached.new '127.0.0.1:11211'
+    CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
 
 or
 
-    CacheMethod.config.client = Redis.new
+    CacheMethod.config.storage = Redis.new
 
 or this might even work...
 
-    CacheMethod.config.client = Rails.cache
+    CacheMethod.config.storage = Rails.cache
 
 See <tt>Config</tt> for the full list of supported caches.
 

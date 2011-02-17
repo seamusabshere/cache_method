@@ -7,45 +7,56 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'cache_method'
 
+require 'shared_tests'
+
 class Test::Unit::TestCase
   def setup
-    CacheMethod.cache.flush
+    Blog2.request_count = 0
   end
 end
 
-require 'memcached'
-require 'memcache'
-require 'redis'
-require 'dalli'
-require 'active_support/all'
-require 'active_support/cache/dalli_store'
-def random_cache
-  c = if ENV['C']
-    ENV['C'].to_i
-  else
-    rand 6
+class Blog1
+  attr_reader :name
+  attr_reader :url
+  def initialize(name, url)
+    @name = name
+    @url = url
   end
-  case c
-  when 0
-    $stderr.puts 'using memcached'
-    Memcached.new 'localhost:11211'
-  when 1
-    $stderr.puts 'using memcache-client'
-    MemCache.new ['localhost:11211']
-  when 2
-    $stderr.puts 'using dalli'
-    Dalli::Client.new ['localhost:11211']
-  when 3
-    $stderr.puts 'using dalli_store'
-    ActiveSupport::Cache::DalliStore.new ['localhost:11211']
-  when 4
-    $stderr.puts 'using memcached-rails'
-    Memcached::Rails.new 'localhost:11211'
-  when 5
-    $stderr.puts 'using Redis'
-    Redis.new
+  attr_writer :request_count
+  def request_count
+    @request_count ||= 0
+  end
+  def get_latest_entries
+    self.request_count += 1
+    ["hello from #{name}"]
+  end
+  cache_method :get_latest_entries
+  def get_latest_entries2
+    self.request_count += 1
+    ["voo vaa #{name}"]
+  end
+  cache_method :get_latest_entries2, 1 # second
+  def hash
+    { :name => name, :url => url }.hash
   end
 end
+def new_instance_of_my_blog
+  Blog1.new 'my_blog', 'http://my_blog.example.com'
+end
+def new_instance_of_another_blog
+  Blog1.new 'another_blog', 'http://another_blog.example.com'
+end
 
-$my_cache = random_cache
-CacheMethod.config.client = $my_cache
+class Blog2
+  class << self
+    attr_writer :request_count
+    def request_count
+      @request_count ||= 0
+    end
+    def get_latest_entries
+      self.request_count += 1
+      'danke schoen'
+    end
+    cache_method :get_latest_entries
+  end
+end

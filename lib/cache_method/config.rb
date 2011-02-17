@@ -3,14 +3,14 @@ module CacheMethod
   # Here's where you set config options.
   #
   # Example:
-  #     CacheMethod.config.client = Memcached.new '127.0.0.1:11211'
+  #     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
   #     CacheMethod.config.default_ttl = 120 # seconds
   #
   # You'd probably put this in your Rails config/initializers, for example.
   class Config
     include ::Singleton
     
-    # Client for accessing the cache.
+    # Storage for the cache.
     #
     # Supported memcached clients:
     # * memcached[https://github.com/fauna/memcached] (either a Memcached or a Memcached::Rails)
@@ -18,16 +18,16 @@ module CacheMethod
     # * memcache-client[https://github.com/mperham/memcache-client] (MemCache, the one commonly used by Rails)
     #
     # Supported Redis clients:
-    # * redis[https://github.com/ezmobius/redis-rb] (NOTE: AUTOMATIC CACHE EXPIRATION NOT SUPPORTED)
+    # * redis[https://github.com/ezmobius/redis-rb]
     #
     # Example:
-    #     CacheMethod.config.client = Memcached.new '127.0.0.1:11211'
-    def client=(client)
-      @client = client
+    #     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
+    def storage=(storage)
+      @storage = storage
     end
 
-    def client #:nodoc:
-      @client || raise("You need to set CacheMethod.config.client with a cache client of your choice")
+    def storage #:nodoc:
+      @storage || raise("You need to set CacheMethod.config.storage with a cache storage of your choice")
     end
     
     # TTL for method caches. Defaults to 60 seconds.

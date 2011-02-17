@@ -8,7 +8,7 @@ module CacheMethod
     include ::Singleton
     
     def flush
-      bare_client.send %w{ flush flush_all clear flushdb }.detect { |c| bare_client.respond_to? c }
+      bare_storage.send %w{ flush flush_all clear flushdb }.detect { |c| bare_storage.respond_to? c }
     end
     
     def fetch(obj, method_id, ttl, *args)
@@ -26,40 +26,44 @@ module CacheMethod
     end
 
     def get(k)
-      if defined?(::Memcached) and bare_client.is_a?(::Memcached)
-        begin; bare_client.get(k); rescue ::Memcached::NotFound; nil; end
-      elsif defined?(::Redis) and bare_client.is_a?(::Redis)
-        if cached_v = bare_client.get(k)
+      if defined?(::Memcached) and bare_storage.is_a?(::Memcached)
+        begin; bare_storage.get(k); rescue ::Memcached::NotFound; nil; end
+      elsif defined?(::Redis) and bare_storage.is_a?(::Redis)
+        if cached_v = bare_storage.get(k) and cached_v.is_a?(::String)
           ::Marshal.load cached_v
         end
-      elsif bare_client.respond_to?(:get)
-        bare_client.get k
-      elsif bare_client.respond_to?(:read)
-        bare_client.read k
+      elsif bare_storage.respond_to?(:get)
+        bare_storage.get k
+      elsif bare_storage.respond_to?(:read)
+        bare_storage.read k
       else
-        raise "Don't know how to work with #{bare_client.inspect}"
+        raise "Don't know how to work with #{bare_storage.inspect}"
       end
     end
         
     def set(k, v, ttl)
       ttl ||= ::CacheMethod.config.default_ttl
-      if defined?(::Redis) and bare_client.is_a?(::Redis)
-        bare_client.set k, ::Marshal.dump(v)
-      elsif bare_client.respond_to?(:set)
-        bare_client.set k, v, ttl
-      elsif bare_client.respond_to?(:write)
+      if defined?(::Redis) and bare_storage.is_a?(::Redis)
         if ttl == 0
-          bare_client.write k, v # never expire
+          bare_storage.set k, ::Marshal.dump(v)
         else
-          bare_client.write k, v, :expires_in => ttl
+          bare_storage.setex k, ttl, ::Marshal.dump(v)
+        end
+      elsif bare_storage.respond_to?(:set)
+        bare_storage.set k, v, ttl
+      elsif bare_storage.respond_to?(:write)
+        if ttl == 0
+          bare_storage.write k, v # never expire
+        else
+          bare_storage.write k, v, :expires_in => ttl
         end
       else
-        raise "Don't know how to work with #{bare_client.inspect}"
+        raise "Don't know how to work with #{bare_storage.inspect}"
       end
     end
     
-    def bare_client
-      ::CacheMethod.config.client
+    def bare_storage
+      Config.instance.storage
     end
   end
 end

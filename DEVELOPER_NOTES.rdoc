@@ -3,43 +3,43 @@
 == Lots of cache method signatures...
 
     def get(k)
-      if defined?(::Memcached) and raw_client.is_a?(::Memcached)
+      if defined?(::Memcached) and bare_storage.is_a?(::Memcached)
         # def get(keys, marshal=true)
-        begin; raw_client.get(k.to_s); rescue ::Memcached::NotFound; nil; end
-      elsif defined?(::Memcached::Rails) and raw_client.is_a?(::Memcached::Rails)
+        begin; bare_storage.get(k.to_s); rescue ::Memcached::NotFound; nil; end
+      elsif defined?(::Memcached::Rails) and bare_storage.is_a?(::Memcached::Rails)
         # def get(key, raw=false)
-        raw_client.get k.to_s
-      elsif defined?(::Dalli::Client) and raw_client.is_a?(::Dalli::Client)
+        bare_storage.get k.to_s
+      elsif defined?(::Dalli::Client) and bare_storage.is_a?(::Dalli::Client)
         # def get(key, options=nil)
-        raw_client.get k.to_s
-      elsif defined?(::MemCache) and raw_client.is_a?(::MemCache)
+        bare_storage.get k.to_s
+      elsif defined?(::MemCache) and bare_storage.is_a?(::MemCache)
         # def get(key, raw = false)
-        raw_client.get k.to_s
-      elsif defined?(::ActiveSupport::Cache::Store) and raw_client.is_a?(::ActiveSupport::Cache::Store)
+        bare_storage.get k.to_s
+      elsif defined?(::ActiveSupport::Cache::Store) and bare_storage.is_a?(::ActiveSupport::Cache::Store)
         # def read(name, options = nil)
-        raw_client.read k.to_s
+        bare_storage.read k.to_s
       else
-        raise "Unknown client: #{raw_client.inspect}"
+        raise "Unknown client: #{bare_storage.inspect}"
       end
     end
     
     def set(k, v)
-      if defined?(::Memcached) and raw_client.is_a?(::Memcached)
+      if defined?(::Memcached) and bare_storage.is_a?(::Memcached)
         # def set(key, value, ttl=@default_ttl, marshal=true, flags=FLAGS)
-        raw_client.set k.to_s, v, ttl
-      elsif defined?(::Memcached::Rails) and raw_client.is_a?(::Memcached::Rails)
+        bare_storage.set k.to_s, v, ttl
+      elsif defined?(::Memcached::Rails) and bare_storage.is_a?(::Memcached::Rails)
         # def set(key, value, ttl=@default_ttl, raw=false)
-        raw_client.set k.to_s, v, ttl
-      elsif defined?(::Dalli::Client) and raw_client.is_a?(::Dalli::Client)
+        bare_storage.set k.to_s, v, ttl
+      elsif defined?(::Dalli::Client) and bare_storage.is_a?(::Dalli::Client)
         # def set(key, value, ttl=nil, options=nil)
-        raw_client.set k.to_s, v, ttl
-      elsif defined?(::MemCache) and raw_client.is_a?(::MemCache)
+        bare_storage.set k.to_s, v, ttl
+      elsif defined?(::MemCache) and bare_storage.is_a?(::MemCache)
         # def set(key, value, expiry = 0, raw = false)
-        raw_client.set k.to_s, v, ttl
-      elsif defined?(::ActiveSupport::Cache::Store) and raw_client.is_a?(::ActiveSupport::Cache::Store)
+        bare_storage.set k.to_s, v, ttl
+      elsif defined?(::ActiveSupport::Cache::Store) and bare_storage.is_a?(::ActiveSupport::Cache::Store)
         # def write(name, value, options = nil)
-        raw_client.write k.to_s, v, :expires_in => ttl
+        bare_storage.write k.to_s, v, :expires_in => ttl
       else
-        raise "Unknown client: #{raw_client.inspect}"
+        raise "Unknown client: #{bare_storage.inspect}"
       end
     end
