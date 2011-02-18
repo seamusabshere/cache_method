@@ -1,14 +1,24 @@
+require 'cache_method/version'
 # See the README.rdoc for more info!
 module CacheMethod
   autoload :Config, 'cache_method/config'
-  autoload :Cache, 'cache_method/cache'
+  autoload :CachedResult, 'cache_method/cached_result'
+  autoload :Epoch, 'cache_method/epoch'
 
   def self.config #:nodoc:
     Config.instance
   end
   
-  def self.cache #:nodoc:
-    Cache.instance
+  def self.klass_name(obj) #:nodoc:
+    obj.is_a?(::Class) ? obj.to_s : obj.class.to_s
+  end
+  
+  def self.method_delimiter(obj) #:nodoc:
+    obj.is_a?(::Class) ? '.' : '#'
+  end
+  
+  def self.method_signature(obj, method_id) #:nodoc:
+    [ klass_name(obj), method_id ].join method_delimiter(obj)
   end
   
   # All Objects, including instances and Classes, get the <tt>#clear_method_cache</tt> method.
@@ -20,7 +30,7 @@ module CacheMethod
     # Example:
     #     my_blog.clear_method_cache :get_latest_entries
     def clear_method_cache(method_id)
-      ::CacheMethod.cache.delete self, method_id
+      ::CacheMethod::Epoch.mark_passing :obj => self, :method_id => method_id
     end
   end
 
@@ -47,9 +57,7 @@ module CacheMethod
       original_method_id = "_uncached_#{method_id}"
       alias_method original_method_id, method_id
       define_method method_id do |*args|
-        ::CacheMethod.cache.fetch self, method_id, ttl, *args do
-          send original_method_id, *args
-        end
+        ::CacheMethod::CachedResult.fetch :obj => self, :method_id => method_id, :original_method_id => original_method_id, :args => args, :ttl => ttl
       end
     end
   end

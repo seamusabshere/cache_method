@@ -1,4 +1,15 @@
-module SharedTests
+require 'helper'
+
+require 'memcached'
+
+class TestCacheMethod < Test::Unit::TestCase
+  def setup
+    Blog2.request_count = 0
+    my_cache = Memcached.new '127.0.0.1:11211'
+    CacheMethod.config.storage = my_cache
+    my_cache.flush
+  end
+  
   def test_cache_instance_method
     a = new_instance_of_my_blog
     assert_equal ["hello from #{a.name}"], a.get_latest_entries
@@ -47,10 +58,9 @@ module SharedTests
     a = new_instance_of_my_blog
     assert_equal ["voo vaa #{a.name}"], a.get_latest_entries2
     assert_equal 1, a.request_count
-    a = new_instance_of_my_blog
     sleep 2
     assert_equal ["voo vaa #{a.name}"], a.get_latest_entries2
-    assert_equal 1, a.request_count
+    assert_equal 2, a.request_count
   end
   
   def test_cache_class_method

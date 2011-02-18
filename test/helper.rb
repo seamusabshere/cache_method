@@ -7,12 +7,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'cache_method'
 
-require 'shared_tests'
-
 class Test::Unit::TestCase
-  def setup
-    Blog2.request_count = 0
-  end
 end
 
 class Blog1

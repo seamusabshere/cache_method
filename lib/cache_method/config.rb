@@ -1,3 +1,4 @@
+require 'cache'
 require 'singleton'
 module CacheMethod
   # Here's where you set config options.
@@ -20,10 +21,12 @@ module CacheMethod
     # Supported Redis clients:
     # * redis[https://github.com/ezmobius/redis-rb]
     #
+    # Uses the cache[https://github.com/seamusabshere/cache] gem to wrap these, so support depends on that gem
+    #
     # Example:
     #     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
-    def storage=(storage)
-      @storage = storage
+    def storage=(raw_client)
+      @storage = ::Cache.new raw_client
     end
 
     def storage #:nodoc:

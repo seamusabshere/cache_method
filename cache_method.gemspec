@@ -18,13 +18,8 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ["lib"]
   
-  s.add_development_dependency 'redis'
-  s.add_development_dependency 'activesupport', '>=2.3.4'
-  s.add_development_dependency 'i18n' # activesupport
-  s.add_development_dependency 'test-unit'
+  s.add_dependency 'cache'
   s.add_development_dependency 'memcached'
-  s.add_development_dependency 'dalli'
-  s.add_development_dependency 'memcache-client'
   # if RUBY_VERSION >= '1.9'
   #   s.add_development_dependency 'ruby-debug19'
   # else
