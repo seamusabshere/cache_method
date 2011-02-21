@@ -34,7 +34,7 @@ module CacheMethod
     end
     
     def cache_key
-      [ method_signature, current_epoch, obj_hash, args_digest ].join ','
+      [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, obj_hash, args_digest ].join ','
     end
     
     def method_signature
@@ -42,7 +42,7 @@ module CacheMethod
     end
             
     def obj_hash
-      @obj_hash ||= obj.hash
+      @obj_hash ||= ::CacheMethod.hashcode(obj)
     end
   
     def args_digest

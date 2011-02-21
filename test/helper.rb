@@ -10,6 +10,39 @@ require 'cache_method'
 class Test::Unit::TestCase
 end
 
+class CopyCat1
+  attr_reader :name
+  def initialize(name)
+    @name = name
+  end
+  attr_writer :echo_count
+  def echo_count
+    @echo_count ||= 0
+  end
+  def echo(*args)
+    self.echo_count += 1
+    return *args
+  end
+  def hash
+    name.hash
+  end
+  cache_method :echo
+end
+
+class CopyCat2
+  class << self
+    attr_writer :echo_count
+    def echo_count
+      @echo_count ||= 0
+    end
+    def echo(*args)
+      self.echo_count += 1
+      return *args
+    end
+    cache_method :echo
+  end
+end
+
 class Blog1
   attr_reader :name
   attr_reader :url

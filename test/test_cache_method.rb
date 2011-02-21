@@ -5,9 +5,52 @@ require 'memcached'
 class TestCacheMethod < Test::Unit::TestCase
   def setup
     Blog2.request_count = 0
+    CopyCat2.echo_count = 0
     my_cache = Memcached.new '127.0.0.1:11211'
     CacheMethod.config.storage = my_cache
     my_cache.flush
+  end
+  
+  def test_cache_instance_method_with_args
+    a = CopyCat1.new 'mimo'
+    
+    assert_equal ['hi'], a.echo(['hi'])
+    assert_equal 1, a.echo_count
+    
+    assert_equal ['hi'], a.echo(['hi'])
+    assert_equal 1, a.echo_count
+    
+    assert_equal ['bye'], a.echo(['bye'])
+    assert_equal 2, a.echo_count
+    
+    assert_equal ['bye'], a.echo(['bye'])
+    assert_equal 2, a.echo_count
+    
+    assert_equal nil, a.echo
+    assert_equal 3, a.echo_count
+    
+    assert_equal nil, a.echo
+    assert_equal 3, a.echo_count
+  end
+  
+  def test_cache_class_method_with_args
+    assert_equal ['hi'], CopyCat2.echo(['hi'])
+    assert_equal 1, CopyCat2.echo_count
+    
+    assert_equal ['hi'], CopyCat2.echo(['hi'])
+    assert_equal 1, CopyCat2.echo_count
+    
+    assert_equal ['bye'], CopyCat2.echo(['bye'])
+    assert_equal 2, CopyCat2.echo_count
+    
+    assert_equal ['bye'], CopyCat2.echo(['bye'])
+    assert_equal 2, CopyCat2.echo_count
+    
+    assert_equal nil, CopyCat2.echo
+    assert_equal 3, CopyCat2.echo_count
+    
+    assert_equal nil, CopyCat2.echo
+    assert_equal 3, CopyCat2.echo_count
   end
   
   def test_cache_instance_method

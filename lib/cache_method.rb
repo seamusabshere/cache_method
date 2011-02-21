@@ -21,6 +21,14 @@ module CacheMethod
     [ klass_name(obj), method_id ].join method_delimiter(obj)
   end
   
+  # What gets called to determine the hashcode of an object.
+  #
+  # * If the object is a Class, then it just does Class.to_s (otherwise Class hash codes change too often)
+  # * Otherwise, call #hash
+  def self.hashcode(obj)
+    obj.is_a?(::Class) ? obj.to_s : obj.hash
+  end
+  
   # All Objects, including instances and Classes, get the <tt>#clear_method_cache</tt> method.
   module InstanceMethods
     # Clear the cache for a particular method.

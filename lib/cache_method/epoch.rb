@@ -1,3 +1,4 @@
+require 'digest/md5'
 module CacheMethod
   class Epoch #:nodoc: all
     class << self
@@ -9,6 +10,10 @@ module CacheMethod
       def mark_passing(options = {})
         epoch = new options
         epoch.mark_passing
+      end
+      
+      def random_name
+        ::Digest::MD5.hexdigest rand.to_s
       end
     end
 
@@ -26,19 +31,25 @@ module CacheMethod
     end
     
     def obj_hash
-      @obj_hash ||= obj.hash
+      @obj_hash ||= ::CacheMethod.hashcode(obj)
     end
     
     def cache_key
-      [ 'CacheMethod', method_signature, obj_hash ].join ','
+      [ 'CacheMethod', 'Epoch', method_signature, obj_hash ].join ','
     end
     
     def current
-      Config.instance.storage.get(cache_key).to_i
+      if cached_v = Config.instance.storage.get(cache_key)
+        cached_v
+      else
+        v = Epoch.random_name
+        Config.instance.storage.set cache_key, v
+        v
+      end
     end
     
     def mark_passing
-      Config.instance.storage.set cache_key, (current+1), 0
+      Config.instance.storage.delete cache_key
     end
   end
 end
