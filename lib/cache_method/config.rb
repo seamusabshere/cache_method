@@ -33,7 +33,7 @@ module CacheMethod
       @storage || raise("You need to set CacheMethod.config.storage with a cache storage of your choice")
     end
     
-    # TTL for method caches. Defaults to 60 seconds.
+    # TTL for method caches. Defaults to 24 hours or 86,400 seconds.
     #
     # Example:
     #     CacheMethod.config.default_ttl = 120 # seconds
@@ -42,7 +42,7 @@ module CacheMethod
     end
     
     def default_ttl #:nodoc:
-      @default_ttl || 60
+      @default_ttl || 86_400
     end
   end
 end

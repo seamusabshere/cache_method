@@ -40,7 +40,7 @@ module CacheMethod
     #
     # Note: Remember to define <tt>#hash</tt> on any object whose instance methods might get cached.
     #
-    # Note 2: Check out CacheMethod.config.default_ttl... the default is only 60 seconds.
+    # Note 2: Check out CacheMethod.config.default_ttl... the default is 24 hours.
     #
     # Example:
     #     class Blog

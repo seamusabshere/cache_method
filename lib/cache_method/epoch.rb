@@ -46,7 +46,8 @@ module CacheMethod
         cached_v
       else
         v = Epoch.random_name
-        Config.instance.storage.set cache_key, v
+        # never expire!
+        Config.instance.storage.set cache_key, v, 0
         v
       end
     end
