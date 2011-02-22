@@ -1,4 +1,3 @@
-require 'digest/md5'
 module CacheMethod
   class Epoch #:nodoc: all
     class << self
@@ -13,7 +12,7 @@ module CacheMethod
       end
       
       def random_name
-        ::Digest::MD5.hexdigest rand.to_s
+        rand(1_000_000).to_s
       end
     end
 
@@ -31,11 +30,15 @@ module CacheMethod
     end
     
     def obj_hash
-      @obj_hash ||= ::CacheMethod.hashcode(obj)
+      @obj_hash ||= obj.hash
     end
     
     def cache_key
-      [ 'CacheMethod', 'Epoch', method_signature, obj_hash ].join ','
+      if obj.is_a? ::Class
+        [ 'CacheMethod', 'Epoch', method_signature ].join ','
+      else
+        [ 'CacheMethod', 'Epoch', method_signature, obj_hash ].join ','
+      end
     end
     
     def current

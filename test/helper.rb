@@ -19,9 +19,23 @@ class CopyCat1
   def echo_count
     @echo_count ||= 0
   end
+  # http://www.ruby-forum.com/topic/98106
+  # matz: "In 1.9, values (i.e. result of splat) are always represented by array,
+  #        so that we won't confuse array as an value with array as values
+  #        representation."
   def echo(*args)
     self.echo_count += 1
-    return *args
+    if RUBY_VERSION >= '1.9'
+      if args.empty?
+        return nil
+      elsif args.length == 1
+        return args[0]
+      else
+        return args
+      end
+    else
+      return *args
+    end
   end
   def hash
     name.hash
@@ -37,7 +51,17 @@ class CopyCat2
     end
     def echo(*args)
       self.echo_count += 1
-      return *args
+      if RUBY_VERSION >= '1.9'
+        if args.empty?
+          return nil
+        elsif args.length == 1
+          return args[0]
+        else
+          return args
+        end
+      else
+        return *args
+      end
     end
     cache_method :echo
   end

@@ -19,6 +19,7 @@ module CacheMethod
     attr_reader :original_method_id
     attr_reader :args
     
+    # Store things wrapped in an Array so that nil is accepted
     def fetch
       if v = Config.instance.storage.get(cache_key) and v.is_a?(::Array)
         v[0]
@@ -34,7 +35,11 @@ module CacheMethod
     end
     
     def cache_key
-      [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, obj_hash, args_digest ].join ','
+      if obj.is_a? ::Class
+        [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, args_digest ].join ','
+      else
+        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_epoch, args_digest ].join ','
+      end
     end
     
     def method_signature
@@ -42,11 +47,11 @@ module CacheMethod
     end
             
     def obj_hash
-      @obj_hash ||= ::CacheMethod.hashcode(obj)
+      @obj_hash ||= obj.hash
     end
   
     def args_digest
-      @args_digest ||= ::Digest::MD5.hexdigest(args.flatten.join)
+      @args_digest ||= args.empty? ? 'empty' : ::Digest::MD5.hexdigest(args.join)
     end
         
     def current_epoch

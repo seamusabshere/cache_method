@@ -20,15 +20,7 @@ module CacheMethod
   def self.method_signature(obj, method_id) #:nodoc:
     [ klass_name(obj), method_id ].join method_delimiter(obj)
   end
-  
-  # What gets called to determine the hashcode of an object.
-  #
-  # * If the object is a Class, then it just does Class.to_s (otherwise Class hash codes change too often)
-  # * Otherwise, call #hash
-  def self.hashcode(obj)
-    obj.is_a?(::Class) ? obj.to_s : obj.hash
-  end
-  
+    
   # All Objects, including instances and Classes, get the <tt>#clear_method_cache</tt> method.
   module InstanceMethods
     # Clear the cache for a particular method.
@@ -65,7 +57,7 @@ module CacheMethod
       original_method_id = "_uncached_#{method_id}"
       alias_method original_method_id, method_id
       define_method method_id do |*args|
-        ::CacheMethod::CachedResult.fetch :obj => self, :method_id => method_id, :original_method_id => original_method_id, :args => args, :ttl => ttl
+        ::CacheMethod::CachedResult.fetch :obj => self, :method_id => method_id, :original_method_id => original_method_id, :ttl => ttl, :args => args
       end
     end
   end
