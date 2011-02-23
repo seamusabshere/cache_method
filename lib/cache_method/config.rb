@@ -26,7 +26,11 @@ module CacheMethod
     # Example:
     #     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
     def storage=(raw_client)
-      @storage = ::Cache.new raw_client
+      if raw_client.is_a?(::Cache)
+        @storage = raw_client
+      else
+        @storage = ::Cache.new raw_client
+      end
     end
 
     def storage #:nodoc:
