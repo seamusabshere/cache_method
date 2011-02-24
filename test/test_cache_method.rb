@@ -196,4 +196,26 @@ class TestCacheMethod < Test::Unit::TestCase
     assert_equal 'danke schoen', Blog2.get_latest_entries
     assert_equal 2, Blog2.request_count
   end
+  
+  def test_never_set_storage
+    CacheMethod.config.instance_variable_set :@storage, nil
+    a = CopyCat1.new 'mimo'
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+  end
+  
+  def test_set_storage_to_nil
+    CacheMethod.config.storage = nil
+    a = CopyCat1.new 'mimo'
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+  end
 end

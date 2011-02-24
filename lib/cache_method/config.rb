@@ -25,16 +25,16 @@ module CacheMethod
     #
     # Example:
     #     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
-    def storage=(raw_client)
-      if raw_client.is_a?(::Cache)
-        @storage = raw_client
+    def storage=(raw_client_or_nil)
+      if raw_client_or_nil.is_a?(::Cache)
+        @storage = raw_client_or_nil
       else
-        @storage = ::Cache.new raw_client
+        @storage = ::Cache.new raw_client_or_nil
       end
     end
 
     def storage #:nodoc:
-      @storage || raise("You need to set CacheMethod.config.storage with a cache storage of your choice")
+      @storage ||= ::Cache.new
     end
     
     # TTL for method caches. Defaults to 24 hours or 86,400 seconds.
