@@ -65,5 +65,5 @@ end
 
 unless ::Object.method_defined? :cache_method
   ::Object.send :include, ::CacheMethod::InstanceMethods
-  ::Object.extend ::CacheMethod::ClassMethods
+  ::Class.send :include, ::CacheMethod::ClassMethods
 end
