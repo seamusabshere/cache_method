@@ -40,6 +40,10 @@ And clear them too
 
 (which doesn't delete the rest of your cache)
 
+== Real-world usage
+
+In production use at {carbon.brighterplanet.com}[http://carbon.brighterplanet.com], the Brighter Planet emission estimate web service.
+
 == Configuration (and supported cache clients)
 
 You need to set where the cache will be stored:
@@ -80,12 +84,7 @@ Note: this is NOT the same thing as <tt>#to_hash</tt>! That returns a <b><tt>Has
 
 == Rationale
 
-* It should be easy to cache a method using memcached.
-* The main clients should be supported
-  * memcache-client (for people who use the Rails default)
-  * dalli (for people on heroku)
-  * memcached (for people using Evan Weaver's ultra-fast gem)
-  * redis (for people who like that sort of thing, but you won't get expiration)
+* It should be easy to cache a method using memcached, dalli (if you're on heroku), redis, etc. (that's why I made the {cache gem}[https://rubygems.org/gems/cache])
 * It should be easy to uncache a method without clearing the whole cache
 * It should be easy to cache instance methods
 * It should be easy to cache methods that depend on object state
