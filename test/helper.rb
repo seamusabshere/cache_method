@@ -122,11 +122,7 @@ class Blog2
   end
 end
 
-require 'active_support'
-require 'active_support/core_ext/module'
 module BlogM
-  # mattr_accessor :request_count
-  # self.request_count = 0
   def self.request_count
     @request_count ||= 0
   end
