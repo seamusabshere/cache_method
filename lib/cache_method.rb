@@ -10,11 +10,11 @@ module CacheMethod
   end
   
   def self.klass_name(obj) #:nodoc:
-    obj.is_a?(::Class) ? obj.to_s : obj.class.to_s
+    (obj.is_a?(::Class) or obj.is_a?(::Module)) ? obj.to_s : obj.class.to_s
   end
   
   def self.method_delimiter(obj) #:nodoc:
-    obj.is_a?(::Class) ? '.' : '#'
+    (obj.is_a?(::Class) or obj.is_a?(::Module)) ? '.' : '#'
   end
   
   def self.method_signature(obj, method_id) #:nodoc:
@@ -66,4 +66,5 @@ end
 unless ::Object.method_defined? :cache_method
   ::Object.send :include, ::CacheMethod::InstanceMethods
   ::Class.send :include, ::CacheMethod::ClassMethods
+  ::Module.send :include, ::CacheMethod::ClassMethods
 end

@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency 'cache', '>=0.2.1'
   s.add_development_dependency 'memcached'
+  s.add_development_dependency 'activesupport'
   # if RUBY_VERSION >= '1.9'
   #   s.add_development_dependency 'ruby-debug19'
   # else

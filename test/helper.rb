@@ -38,9 +38,18 @@ class CopyCat1
     end
   end
   def hash
+    raise "Used hash"
+  end
+  def method_cache_hash
     name.hash
   end
   cache_method :echo
+end
+
+class CopyCat1a < CopyCat1
+  def method_cache_hash
+    raise "Used method_cache_hash"
+  end
 end
 
 class CopyCat2
@@ -109,6 +118,26 @@ class Blog2
       self.request_count += 1
       'danke schoen'
     end
+    cache_method :get_latest_entries
+  end
+end
+
+require 'active_support'
+require 'active_support/core_ext/module'
+module BlogM
+  # mattr_accessor :request_count
+  # self.request_count = 0
+  def self.request_count
+    @request_count ||= 0
+  end
+  def self.request_count=(x)
+    @request_count = x
+  end
+  def self.get_latest_entries
+    self.request_count += 1
+    'danke schoen'
+  end
+  class << self
     cache_method :get_latest_entries
   end
 end

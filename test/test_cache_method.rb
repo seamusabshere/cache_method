@@ -20,7 +20,7 @@ class TestCacheMethod < Test::Unit::TestCase
     assert_equal 'hi', a.echo('hi')
     assert_equal 1, a.echo_count
   end
-
+  
   def test_cache_instance_method_with_nil_args
     a = CopyCat1.new 'mimo'
     assert_equal nil, a.echo
@@ -31,11 +31,11 @@ class TestCacheMethod < Test::Unit::TestCase
     
     assert_equal nil, a.echo(nil)
     assert_equal 2, a.echo_count
-
+  
     assert_equal nil, a.echo(nil)
     assert_equal 2, a.echo_count    
   end
-
+  
   def test_cache_instance_method_with_array_args
     a = CopyCat1.new 'mimo'
     
@@ -64,7 +64,7 @@ class TestCacheMethod < Test::Unit::TestCase
     assert_equal [], a.echo([])
     assert_equal 4, a.echo_count
   end
-
+  
   def test_cache_class_method_with_args
     assert_equal 'hi', CopyCat2.echo('hi')
     assert_equal 1, CopyCat2.echo_count
@@ -82,7 +82,7 @@ class TestCacheMethod < Test::Unit::TestCase
     
     assert_equal nil, CopyCat2.echo(nil)
     assert_equal 2, CopyCat2.echo_count
-
+  
     assert_equal nil, CopyCat2.echo(nil)
     assert_equal 2, CopyCat2.echo_count    
   end
@@ -217,5 +217,20 @@ class TestCacheMethod < Test::Unit::TestCase
     
     assert_equal 'hi', a.echo('hi')
     assert_equal 1, a.echo_count
+  end
+  
+  def test_cache_module_method
+    assert_equal 0, BlogM.request_count
+    assert_equal 'danke schoen', BlogM.get_latest_entries
+    assert_equal 1, BlogM.request_count
+    assert_equal 'danke schoen', BlogM.get_latest_entries
+    assert_equal 1, BlogM.request_count
+  end
+  
+  def test_method_cache_hash
+    assert_raises(RuntimeError, /Used method_cache_hash/) do
+      a = CopyCat1a.new 'mimo'
+      a.echo 'hi'
+    end
   end
 end

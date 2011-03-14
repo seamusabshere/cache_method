@@ -35,7 +35,7 @@ module CacheMethod
     end
     
     def cache_key
-      if obj.is_a? ::Class
+      if obj.is_a? ::Class or obj.is_a? ::Module
         [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, args_digest ].join ','
       else
         [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_epoch, args_digest ].join ','
@@ -47,7 +47,7 @@ module CacheMethod
     end
             
     def obj_hash
-      @obj_hash ||= obj.hash
+      @obj_hash ||= obj.respond_to?(:method_cache_hash) ? obj.method_cache_hash : obj.hash
     end
   
     def args_digest
