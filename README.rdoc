@@ -82,6 +82,10 @@ Ideally, you should try to make a <tt>String</tt> or a <tt>Hash</tt> and call th
 
 Note: this is NOT the same thing as <tt>#to_hash</tt>! That returns a <b><tt>Hash</tt></b>. What we want is an integer "hash code."
 
+== Using #method_cache_hash instead of #hash
+
+If you don't want to modify #hash, use #method_cache_hash instead.
+
 == Rationale
 
 * It should be easy to cache a method using memcached, dalli (if you're on heroku), redis, etc. (that's why I made the {cache gem}[https://rubygems.org/gems/cache])
