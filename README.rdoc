@@ -2,6 +2,8 @@
 
 It's like <tt>alias_method</tt>, but it's <tt>cache_method</tt>!
 
+Lets you cache the results of calling methods given their arguments. Like memoization, but stored in Memcached, Redis, etc. so that the cached results can be shared between processes and hosts.
+
 == Example
 
     require 'cache_method'
