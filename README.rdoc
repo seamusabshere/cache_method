@@ -4,6 +4,10 @@ It's like <tt>alias_method</tt>, but it's <tt>cache_method</tt>!
 
 Lets you cache the results of calling methods given their arguments. Like memoization, but stored in Memcached, Redis, etc. so that the cached results can be shared between processes and hosts.
 
+== Real-world usage
+
+In production use at {carbon.brighterplanet.com}[http://carbon.brighterplanet.com] and {data.brighterplanet.com}[http://data.brighterplanet.com].
+
 == Example
 
     require 'cache_method'
@@ -41,10 +45,6 @@ And clear them too
     my_blog.clear_method_cache :get_latest_entries
 
 (which doesn't delete the rest of your cache)
-
-== Real-world usage
-
-In production use at {carbon.brighterplanet.com}[http://carbon.brighterplanet.com], the Brighter Planet emission estimate web service.
 
 == Configuration (and supported cache clients)
 
