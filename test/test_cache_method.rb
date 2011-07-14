@@ -6,7 +6,7 @@ class TestCacheMethod < Test::Unit::TestCase
   def setup
     Blog2.request_count = 0
     CopyCat2.echo_count = 0
-    my_cache = Memcached.new '127.0.0.1:11211', :binary => false
+    my_cache = Memcached.new '127.0.0.1:11211', :binary => true
     my_cache.flush
     CacheMethod.config.storage = my_cache
   end
