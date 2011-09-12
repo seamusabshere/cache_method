@@ -88,6 +88,33 @@ Note: this is NOT the same thing as <tt>#to_hash</tt>! That returns a <b><tt>Has
 
 If you don't want to modify #hash, use #method_cache_hash instead.
 
+== Module methods
+
+You can put <tt>#cache_method</tt> right into your module declarations:
+
+    module MyModule
+      def my_module_method(args)
+        # [...]
+      end
+      cache_method :my_module_method
+    end
+
+    class Tiger
+      extend MyModule
+    end
+    
+    class Lion
+      extend MyModule
+    end
+    
+Rest assured that <tt>Tiger.my_module_method</tt> and <tt>Lion.my_module_method</tt> will be cached correctly and separately. This, on the other hand, won't work:
+
+    class Tiger
+      extend MyModule
+      # wrong - will raise NameError Exception: undefined method `my_module_method' for class `Tiger'
+      # cache_method :my_module_method
+    end
+
 == Rationale
 
 * It should be easy to cache a method using memcached, dalli (if you're on heroku), redis, etc. (that's why I made the {cache gem}[https://rubygems.org/gems/cache])

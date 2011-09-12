@@ -52,6 +52,22 @@ class CopyCat1a < CopyCat1
   end
 end
 
+module Say
+  def say_count
+    @say_count ||= 0
+  end
+  
+  def say_count=(x)
+    @say_count = x
+  end
+  
+  def say(msg)
+    self.say_count += 1
+    msg
+  end
+  cache_method :say
+end
+
 class CopyCat2
   class << self
     attr_writer :echo_count
@@ -137,3 +153,8 @@ module BlogM
     cache_method :get_latest_entries
   end
 end
+
+CopyCat1.extend Say
+CopyCat2.extend Say
+
+CopyCat1.send :include, Say

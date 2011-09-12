@@ -6,6 +6,8 @@ class TestCacheMethod < Test::Unit::TestCase
   def setup
     Blog2.request_count = 0
     CopyCat2.echo_count = 0
+    CopyCat1.say_count = 0
+    CopyCat2.say_count = 0
     my_cache = Memcached.new '127.0.0.1:11211', :binary => true
     my_cache.flush
     CacheMethod.config.storage = my_cache
@@ -232,5 +234,37 @@ class TestCacheMethod < Test::Unit::TestCase
       a = CopyCat1a.new 'mimo'
       a.echo 'hi'
     end
+  end
+  
+  def test_method_added_by_extension
+    assert_equal 'hi', CopyCat2.say('hi')
+    assert_equal 1, CopyCat2.say_count
+
+    assert_equal 'hi', CopyCat2.say('hi')
+    assert_equal 1, CopyCat2.say_count
+  end
+  
+  def test_method_added_by_inclusion
+    a = CopyCat1.new 'sayer'
+
+    assert_equal 'hi', a.say('hi')
+    assert_equal 1, a.say_count
+    
+    assert_equal 'hi', a.say('hi')
+    assert_equal 1, a.say_count
+  end
+  
+  def test_not_confused_by_module
+    assert_equal 'hi', CopyCat2.say('hi')
+    assert_equal 1, CopyCat2.say_count
+
+    assert_equal 'hi', CopyCat2.say('hi')
+    assert_equal 1, CopyCat2.say_count
+
+    assert_equal 'hi', CopyCat1.say('hi')
+    assert_equal 1, CopyCat1.say_count
+
+    assert_equal 'hi', CopyCat1.say('hi')
+    assert_equal 1, CopyCat1.say_count
   end
 end
