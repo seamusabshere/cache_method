@@ -1,5 +1,5 @@
 module CacheMethod
-  class Epoch #:nodoc: all
+  class Generation #:nodoc: all
     class << self
       def random_name
         rand(100_000_000).to_s
@@ -24,9 +24,9 @@ module CacheMethod
     
     def cache_key
       if obj.is_a? ::Class or obj.is_a? ::Module
-        [ 'CacheMethod', 'Epoch', method_signature ].join ','
+        [ 'CacheMethod', 'Generation', method_signature ].join ','
       else
-        [ 'CacheMethod', 'Epoch', method_signature, obj_hash ].join ','
+        [ 'CacheMethod', 'Generation', method_signature, obj_hash ].join ','
       end
     end
     
@@ -34,7 +34,7 @@ module CacheMethod
       if cached_v = Config.instance.storage.get(cache_key)
         cached_v
       else
-        v = Epoch.random_name
+        v = Generation.random_name
         # never expire!
         Config.instance.storage.set cache_key, v, 0
         v

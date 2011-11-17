@@ -31,9 +31,9 @@ module CacheMethod
     
     def cache_key
       if obj.is_a?(::Class) or obj.is_a?(::Module)
-        [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, args_digest ].compact.join ','
+        [ 'CacheMethod', 'CachedResult', method_signature, current_generation, args_digest ].compact.join ','
       else
-        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_epoch, args_digest ].compact.join ','
+        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_generation, args_digest ].compact.join ','
       end
     end
     
@@ -49,9 +49,9 @@ module CacheMethod
       @args_digest ||= args.empty? ? 'empty' : ::Digest::MD5.hexdigest(args.join)
     end
         
-    def current_epoch
+    def current_generation
       if Config.instance.generational?
-        @current_epoch ||= Epoch.new(obj, method_id).current
+        @current_generation ||= Generation.new(obj, method_id).current
       end
     end
   end

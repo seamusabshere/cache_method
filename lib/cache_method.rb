@@ -3,7 +3,7 @@ require 'cache_method/version'
 module CacheMethod
   autoload :Config, 'cache_method/config'
   autoload :CachedResult, 'cache_method/cached_result'
-  autoload :Epoch, 'cache_method/epoch'
+  autoload :Generation, 'cache_method/generation'
 
   def self.config #:nodoc:
     Config.instance
@@ -31,7 +31,7 @@ module CacheMethod
     #     my_blog.clear_method_cache :get_latest_entries
     def clear_method_cache(method_id)
       if ::CacheMethod.config.generational?
-        ::CacheMethod::Epoch.new(self, method_id).mark_passing
+        ::CacheMethod::Generation.new(self, method_id).mark_passing
       else
         raise ::RuntimeError, "[cache_method] clear_method_cache called, but you have disabled generational caching. Check your setting for CacheMethod.config.generational"
       end
