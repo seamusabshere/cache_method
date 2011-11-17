@@ -6,7 +6,7 @@ Lets you cache the results of calling methods given their arguments. Like memoiz
 
 == Real-world usage
 
-In production use at {carbon.brighterplanet.com}[http://carbon.brighterplanet.com] and {data.brighterplanet.com}[http://data.brighterplanet.com].
+In production use at {impact.brighterplanet.com}[http://impact.brighterplanet.com] and {data.brighterplanet.com}[http://data.brighterplanet.com].
 
 == Example
 
@@ -20,17 +20,16 @@ In production use at {carbon.brighterplanet.com}[http://carbon.brighterplanet.co
         @url = url
       end
 
-      # The method we're going to cache
       def get_latest_entries
-        sleep 5
+        # ...
       end
-      
-      # What you get with this gem
       cache_method :get_latest_entries
 
-      # Per Ruby convention, a "hash code" representing the internal state of an instance.
-      # It's recommended that you construct a String or a Hash and then call #hash on it.
-      def hash
+      # cache_method defaults to using the #hash method
+      # It's a "hash code" (integer! always integer!) representing the internal state of an instance.
+      # If you need to customize it, you can define #method_cache_hash.
+      # In that case, it's recommended that you construct a String or a Hash and then call #hash on it (because you should return an integer)
+      def method_cache_hash
         { :name => name, :url => url }.hash
       end
     end
@@ -72,7 +71,7 @@ get_latest_entries doesn't take any arguments, so it must depend on my_blog.url 
 
     class Blog
       # [...]
-      def hash
+      def method_cache_hash
         { :name => name, :url => url }.hash
       end
       # [...]

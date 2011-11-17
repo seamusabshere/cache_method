@@ -48,14 +48,10 @@ module CacheMethod
     #
     # Example:
     #     class Blog
-    #       # [...]
     #       def get_latest_entries
-    #         sleep 5
+    #         # [...]
     #       end
-    #       # [...]
     #       cache_method :get_latest_entries
-    #       # if you wanted a different ttl...
-    #       # cache_method :get_latest_entries, 800 #seconds
     #     end
     def cache_method(method_id, ttl = nil)
       original_method_id = "_uncached_#{method_id}"
