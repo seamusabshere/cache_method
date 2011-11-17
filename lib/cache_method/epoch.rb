@@ -1,25 +1,14 @@
 module CacheMethod
   class Epoch #:nodoc: all
     class << self
-      def current(options = {})
-        epoch = new options
-        epoch.current
-      end
-      
-      def mark_passing(options = {})
-        epoch = new options
-        epoch.mark_passing
-      end
-      
       def random_name
-        rand(1_000_000).to_s
+        rand(100_000_000).to_s
       end
     end
 
-    def initialize(options = {})
-      options.each do |k, v|
-        instance_variable_set "@#{k}", v
-      end
+    def initialize(obj, method_id)
+      @obj = obj
+      @method_id = method_id
     end
     
     attr_reader :obj

@@ -1,17 +1,12 @@
 require 'digest/md5'
 module CacheMethod
   class CachedResult #:nodoc: all
-    class << self
-      def fetch(options = {})
-        cached_result = new options
-        cached_result.fetch
-      end
-    end
-    
-    def initialize(options = {})
-      options.each do |k, v|
-        instance_variable_set "@#{k}", v
-      end
+    def initialize(obj, method_id, original_method_id, ttl, args)
+      @obj = obj
+      @method_id = method_id
+      @original_method_id = original_method_id
+      @ttl = ttl
+      @args = args
     end
 
     attr_reader :obj
@@ -56,7 +51,7 @@ module CacheMethod
         
     def current_epoch
       if Config.instance.generational?
-        @current_epoch ||= Epoch.current(:obj => obj, :method_id => method_id)
+        @current_epoch ||= Epoch.new(obj, method_id).current
       end
     end
   end
