@@ -11,6 +11,20 @@ module CacheMethod
   class Config
     include ::Singleton
     
+    # Whether to use "generational" caching. Default is true.
+    #
+    # Pro: enables clearing/flushing/expiring specific methods
+    # Con: requires an extra trip to memcached to get the current "generation"
+    #
+    # Set to false if you just flush everything and don't need to selectively flush particular methods
+    def generational=(boolean)
+      @generational = boolean
+    end
+    
+    def generational? #:nodoc:
+      @generational == true or @generational.nil?
+    end
+    
     # Storage for the cache.
     #
     # Supported memcached clients:

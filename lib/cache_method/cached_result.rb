@@ -35,10 +35,10 @@ module CacheMethod
     end
     
     def cache_key
-      if obj.is_a? ::Class or obj.is_a? ::Module
-        [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, args_digest ].join ','
+      if obj.is_a?(::Class) or obj.is_a?(::Module)
+        [ 'CacheMethod', 'CachedResult', method_signature, current_epoch, args_digest ].compact.join ','
       else
-        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_epoch, args_digest ].join ','
+        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_epoch, args_digest ].compact.join ','
       end
     end
     
@@ -55,7 +55,9 @@ module CacheMethod
     end
         
     def current_epoch
-      @current_epoch ||= Epoch.current(:obj => obj, :method_id => method_id)
+      if Config.instance.generational?
+        @current_epoch ||= Epoch.current(:obj => obj, :method_id => method_id)
+      end
     end
   end
 end

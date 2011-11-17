@@ -11,6 +11,7 @@ class TestCacheMethod < Test::Unit::TestCase
     my_cache = Memcached.new '127.0.0.1:11211', :binary => true
     my_cache.flush
     CacheMethod.config.storage = my_cache
+    CacheMethod.config.generational = true
   end
   
   def test_cache_instance_method_with_args
@@ -266,5 +267,32 @@ class TestCacheMethod < Test::Unit::TestCase
 
     assert_equal 'hi', CopyCat1.say('hi')
     assert_equal 1, CopyCat1.say_count
+  end
+  
+  def test_disable_generational_caching
+    CacheMethod.config.generational = false
+    
+    a = CopyCat1.new 'mimo'
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+    
+    assert_equal 'hi', a.echo('hi')
+    assert_equal 1, a.echo_count
+  end
+  
+  def test_cant_clear_method_cache_without_generational_caching
+    CacheMethod.config.generational = false
+
+    a = new_instance_of_my_blog
+    assert_equal ["hello from #{a.name}"], a.get_latest_entries
+    assert_equal 1, a.request_count
+    
+    assert_raises(::RuntimeError) do
+      a.clear_method_cache :get_latest_entries
+    end
+    
+    assert_equal ["hello from #{a.name}"], a.get_latest_entries
+    assert_equal 1, a.request_count
   end
 end

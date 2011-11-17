@@ -30,7 +30,11 @@ module CacheMethod
     # Example:
     #     my_blog.clear_method_cache :get_latest_entries
     def clear_method_cache(method_id)
-      ::CacheMethod::Epoch.mark_passing :obj => self, :method_id => method_id
+      if ::CacheMethod.config.generational?
+        ::CacheMethod::Epoch.mark_passing :obj => self, :method_id => method_id
+      else
+        raise ::RuntimeError, "[cache_method] clear_method_cache called, but you have disabled generational caching. Check your setting for CacheMethod.config.generational"
+      end
     end
   end
 
