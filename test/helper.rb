@@ -158,3 +158,9 @@ CopyCat1.extend Say
 CopyCat2.extend Say
 
 CopyCat1.send :include, Say
+
+class DontStringifyMe < Struct.new(:message)
+  def to_s
+    "Don't stringify me, read my message!"
+  end
+end

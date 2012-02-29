@@ -295,4 +295,23 @@ class TestCacheMethod < Test::Unit::TestCase
     assert_equal ["hello from #{a.name}"], a.get_latest_entries
     assert_equal 1, a.request_count
   end
+
+  def test_doesnt_rely_on_to_s_for_args_digest
+    hello = DontStringifyMe.new("hello")
+    world = DontStringifyMe.new("world")
+
+    a = CopyCat1.new 'mimo'
+    
+    a.echo(hello)
+    assert_equal 1, a.echo_count
+    
+    a.echo(hello)
+    assert_equal 1, a.echo_count
+
+    a.echo(world)
+    assert_equal 2, a.echo_count
+
+    a.echo(world)
+    assert_equal 2, a.echo_count
+  end
 end
