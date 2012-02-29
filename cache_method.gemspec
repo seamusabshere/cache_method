@@ -5,7 +5,6 @@ require "cache_method/version"
 Gem::Specification.new do |s|
   s.name        = "cache_method"
   s.version     = CacheMethod::VERSION
-  s.platform    = Gem::Platform::RUBY
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
   s.homepage    = "https://github.com/seamusabshere/cache_method"
