@@ -2,7 +2,11 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 require 'test/unit'
-# require 'ruby-debug'
+
+if ::Bundler.definition.specs['ruby-debug19'].first or ::Bundler.definition.specs['ruby-debug'].first
+  require 'ruby-debug'
+end
+
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'cache_method'
@@ -27,6 +31,14 @@ class CopyCat1
     self.echo_count += 1
     return *args
   end
+  attr_writer :ack_count
+  def ack_count
+    @ack_count ||= 0
+  end
+  def ack(*args)
+    self.ack_count += 1
+    'ACK'
+  end
   def marshal_dump
     raise "Used marshal_dump"
   end
@@ -34,6 +46,7 @@ class CopyCat1
     name
   end
   cache_method :echo
+  cache_method :ack
 end
 
 class CopyCat1a < CopyCat1
@@ -151,6 +164,21 @@ CopyCat1.send :include, Say
 
 class DontStringifyMe < Struct.new(:message)
   def to_s
-    "Don't stringify me, read my message!"
+    raise "Don't stringify me, read my message!"
+  end
+  alias :inspect :to_s
+end
+
+class DontMarshalMe < Struct.new(:message)
+  def marshal_dump
+    raise "Don't marshal dump me!"
+  end
+
+  def marshal_load(src)
+    raise "Don't marshal load me! Maybe I'm a HASH WITH A DEFAULT PROC!"
+  end
+
+  def as_cache_key
+    message
   end
 end

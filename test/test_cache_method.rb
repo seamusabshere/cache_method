@@ -402,4 +402,38 @@ class TestCacheMethod < Test::Unit::TestCase
     a.echo(world)
     assert_equal 2, a.echo_count
   end
+
+  def test_doesnt_marshal_if_as_cache_key_defined
+    hello = DontMarshalMe.new("hello")
+    world = DontMarshalMe.new("world")
+
+    a = CopyCat1.new 'mimo'
+    ack_count = 0
+
+    [
+      hello,
+      world,
+      [hello],
+      [world],
+      [[hello]],
+      [[world]],
+      { hello => world },
+      { world => hello },
+      [{hello => world}],
+      [{world => hello}],
+      [[{hello => world}]],
+      [[{world => hello}]],
+      {hello => [{hello => world}]},
+      {world => [{hello => world}]},
+    ].each do |nasty|
+      ack_count += 1
+      5.times do
+        a.ack(nasty)
+        assert_equal ack_count, a.ack_count
+
+        a.ack(nasty)
+        assert_equal ack_count, a.ack_count
+      end
+    end
+  end
 end

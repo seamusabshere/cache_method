@@ -1,6 +1,26 @@
 require 'digest/sha1'
 module CacheMethod
   class CachedResult #:nodoc: all
+    class << self
+      def resolve_cache_key(obj)
+        case obj
+        when ::Array
+          obj.map do |v|
+            resolve_cache_key v
+          end
+        when ::Hash
+          obj.inject({}) do |memo, (k, v)|
+            kk = resolve_cache_key k
+            vv = resolve_cache_key v
+            memo[kk] = vv
+            memo
+          end
+        else
+          obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj
+        end
+      end
+    end
+    
     CACHE_KEY_JOINER = ','
 
     def initialize(obj, method_id, original_method_id, ttl, args)
@@ -44,11 +64,11 @@ module CacheMethod
     end
             
     def obj_digest
-      @obj_digest ||= ::Digest::SHA1.hexdigest(::Marshal.dump(obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj))
+      @obj_digest ||= ::Digest::SHA1.hexdigest(::Marshal.dump(CachedResult.resolve_cache_key(obj)))
     end
   
     def args_digest
-      @args_digest ||= args.empty? ? 'empty' : ::Digest::SHA1.hexdigest(::Marshal.dump(args))
+      @args_digest ||= args.empty? ? 'empty' : ::Digest::SHA1.hexdigest(::Marshal.dump(CachedResult.resolve_cache_key(args)))
     end
         
     def current_generation
