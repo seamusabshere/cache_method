@@ -35,6 +35,10 @@ module CacheMethod
         raise ::RuntimeError, "[cache_method] cache_method_clear called, but you have disabled generational caching. Check your setting for CacheMethod.config.generational"
       end
     end
+
+    def cache_method_cached?(method_id, *args)
+      ::CacheMethod::CachedResult.new(self, method_id, nil, nil, args).exist?
+    end
   end
 
   # All Classes (but not instances), get the <tt>.cache_method</tt> method.

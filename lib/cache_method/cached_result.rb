@@ -46,6 +46,10 @@ module CacheMethod
         v
       end
     end
+
+    def exist?
+      Config.instance.storage.exist?(cache_key)
+    end
     
     def ttl
       @ttl ||= Config.instance.default_ttl

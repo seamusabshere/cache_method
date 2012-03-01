@@ -436,4 +436,13 @@ class TestCacheMethod < Test::Unit::TestCase
       end
     end
   end
+
+  def test_cached_query
+    a = CopyCat1.new 'mimo'
+    assert !a.cache_method_cached?(:echo, 'hi')
+    assert !a.cache_method_cached?(:echo, 'there')
+    a.echo('hi')
+    assert a.cache_method_cached?(:echo, 'hi')
+    assert !a.cache_method_cached?(:echo, 'there')
+  end
 end
