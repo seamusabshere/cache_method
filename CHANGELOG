@@ -1,0 +1,24 @@
+0.2.0 / 2012-02-29
+
+* API changes:
+
+  * #clear_method_cache -> #cache_method_clear
+  * #method_cache_hash -> #as_cache_key (see README)
+  * doesn't rely on #hash at all any more (http://numbers.brighterplanet.com/2012/02/29/beware-of-string-hash-being-used-for-cache-keys/)
+  * doesn't try to mitigate differences between Ruby 1.8 and 1.9 splats (http://www.ruby-forum.com/topic/98106)
+
+* Enhancements
+
+  * clearer method naming, I think
+  * safer determination of cache keys - previously, in effect, args.map(&:to_s) was being used
+  * no more autoload
+  * remove direct dependency on activesupport
+  * tests now run with dalli, green on MRI 1.8, MRI 1.9, and jruby 1.6.7
+
+0.1.7 / yanked!
+
+* Bug: used args.map(&:hash) instead of args.map(&:to_s)... which was actually worse because #hash is different across processes.
+
+0.1.6 / November 17, 2011
+
+* Last release before CHANGELOG in place

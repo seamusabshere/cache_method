@@ -18,11 +18,4 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   
   s.add_dependency 'cache', '>=0.2.1'
-  s.add_development_dependency 'memcached'
-  s.add_development_dependency 'rake'
-  # if RUBY_VERSION >= '1.9'
-  #   s.add_development_dependency 'ruby-debug19'
-  # else
-  #   s.add_development_dependency 'ruby-debug'
-  # end
 end

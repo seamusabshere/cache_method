@@ -25,30 +25,20 @@ class CopyCat1
   #        representation."
   def echo(*args)
     self.echo_count += 1
-    if RUBY_VERSION >= '1.9'
-      if args.empty?
-        return nil
-      elsif args.length == 1
-        return args[0]
-      else
-        return args
-      end
-    else
-      return *args
-    end
+    return *args
   end
-  def hash
-    raise "Used hash"
+  def marshal_dump
+    raise "Used marshal_dump"
   end
-  def method_cache_hash
-    name.hash
+  def as_cache_key
+    name
   end
   cache_method :echo
 end
 
 class CopyCat1a < CopyCat1
-  def method_cache_hash
-    raise "Used method_cache_hash"
+  def as_cache_key
+    raise "Used as_cache_key"
   end
 end
 
@@ -113,8 +103,8 @@ class Blog1
     ["voo vaa #{name}"]
   end
   cache_method :get_latest_entries2, 1 # second
-  def hash
-    { :name => name, :url => url }.hash
+  def as_cache_key
+    { :name => name, :url => url }
   end
 end
 def new_instance_of_my_blog

@@ -1,5 +1,5 @@
-require 'bundler'
-Bundler::GemHelper.install_tasks
+#!/usr/bin/env rake
+require "bundler/gem_tasks"
 
 require 'rake'
 require 'rake/testtask'
@@ -11,12 +11,5 @@ end
 
 task :default => :test
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "cache_method #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
+require 'yard'
+YARD::Rake::YardocTask.new

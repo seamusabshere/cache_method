@@ -1,3 +1,4 @@
+require 'digest/sha1'
 module CacheMethod
   class Generation #:nodoc: all
     class << self
@@ -18,15 +19,15 @@ module CacheMethod
       @method_signature ||= ::CacheMethod.method_signature(obj, method_id)
     end
     
-    def obj_hash
-      @obj_hash ||= obj.respond_to?(:method_cache_hash) ? obj.method_cache_hash : obj.hash
+    def obj_digest
+      @obj_digest ||= ::Digest::SHA1.hexdigest(::Marshal.dump(obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj))
     end
     
     def cache_key
-      if obj.is_a? ::Class or obj.is_a? ::Module
+      if obj.is_a?(::Class) or obj.is_a?(::Module)
         [ 'CacheMethod', 'Generation', method_signature ].join ','
       else
-        [ 'CacheMethod', 'Generation', method_signature, obj_hash ].join ','
+        [ 'CacheMethod', 'Generation', method_signature, obj_digest ].join ','
       end
     end
     

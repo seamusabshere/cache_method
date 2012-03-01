@@ -2,7 +2,6 @@ require 'digest/sha1'
 module CacheMethod
   class CachedResult #:nodoc: all
     CACHE_KEY_JOINER = ','
-    ARG_HASH_JOINER = '/'
 
     def initialize(obj, method_id, original_method_id, ttl, args)
       @obj = obj
@@ -36,7 +35,7 @@ module CacheMethod
       if obj.is_a?(::Class) or obj.is_a?(::Module)
         [ 'CacheMethod', 'CachedResult', method_signature, current_generation, args_digest ].compact.join CACHE_KEY_JOINER
       else
-        [ 'CacheMethod', 'CachedResult', method_signature, obj_hash, current_generation, args_digest ].compact.join CACHE_KEY_JOINER
+        [ 'CacheMethod', 'CachedResult', method_signature, obj_digest, current_generation, args_digest ].compact.join CACHE_KEY_JOINER
       end
     end
     
@@ -44,12 +43,12 @@ module CacheMethod
       @method_signature ||= ::CacheMethod.method_signature(obj, method_id)
     end
             
-    def obj_hash
-      @obj_hash ||= obj.respond_to?(:method_cache_hash) ? obj.method_cache_hash : obj.hash
+    def obj_digest
+      @obj_digest ||= ::Digest::SHA1.hexdigest(::Marshal.dump(obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj))
     end
   
     def args_digest
-      @args_digest ||= args.empty? ? 'empty' : calculate_args_digest
+      @args_digest ||= args.empty? ? 'empty' : ::Digest::SHA1.hexdigest(::Marshal.dump(args))
     end
         
     def current_generation
@@ -58,20 +57,8 @@ module CacheMethod
       end
     end
 
-    private
-
-    def calculate_args_digest
-      # equality ruby 1.8 and 1.9 splat behavior
-      # FIXME i don't think cache_method should handle this, really
-      hashes = args.map do |arg|
-        case arg
-        when ::Array
-          arg.map { |subarg| subarg.hash }.join(ARG_HASH_JOINER)
-        else
-          arg.hash
-        end
-      end
-      ::Digest::SHA1.hexdigest hashes.join(ARG_HASH_JOINER)
+    def arity
+      @arity ||= obj.method(original_method_id).arity
     end
   end
 end

@@ -1,10 +1,9 @@
-require 'cache_method/version'
+require 'cache_method/config'
+require 'cache_method/cached_result'
+require 'cache_method/generation'
+
 # See the README.rdoc for more info!
 module CacheMethod
-  autoload :Config, 'cache_method/config'
-  autoload :CachedResult, 'cache_method/cached_result'
-  autoload :Generation, 'cache_method/generation'
-
   def self.config #:nodoc:
     Config.instance
   end
@@ -21,19 +20,19 @@ module CacheMethod
     [ klass_name(obj), method_id ].join method_delimiter(obj)
   end
     
-  # All Objects, including instances and Classes, get the <tt>#clear_method_cache</tt> method.
+  # All Objects, including instances and Classes, get the <tt>#cache_method_clear</tt> method.
   module InstanceMethods
     # Clear the cache for a particular method.
     #
-    # Note: Remember to define <tt>#hash</tt> on any object whose instance methods might get cached.
+    # Note: Remember to define <tt>#as_cache_key</tt> on any object whose instance methods might get cached.
     #
     # Example:
-    #     my_blog.clear_method_cache :get_latest_entries
-    def clear_method_cache(method_id)
+    #     my_blog.cache_method_clear :get_latest_entries
+    def cache_method_clear(method_id)
       if ::CacheMethod.config.generational?
         ::CacheMethod::Generation.new(self, method_id).mark_passing
       else
-        raise ::RuntimeError, "[cache_method] clear_method_cache called, but you have disabled generational caching. Check your setting for CacheMethod.config.generational"
+        raise ::RuntimeError, "[cache_method] cache_method_clear called, but you have disabled generational caching. Check your setting for CacheMethod.config.generational"
       end
     end
   end
@@ -42,7 +41,7 @@ module CacheMethod
   module ClassMethods
     # Cache a method. TTL in seconds, defaults to whatever's in CacheMethod.config.default_ttl
     #
-    # Note: Remember to define <tt>#hash</tt> on any object whose instance methods might get cached.
+    # Note: Remember to define <tt>#as_cache_key</tt> on any object whose instance methods might get cached.
     #
     # Note 2: Check out CacheMethod.config.default_ttl... the default is 24 hours.
     #
