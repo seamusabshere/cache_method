@@ -56,9 +56,5 @@ module CacheMethod
         @current_generation ||= Generation.new(obj, method_id).current
       end
     end
-
-    def arity
-      @arity ||= obj.method(original_method_id).arity
-    end
   end
 end
