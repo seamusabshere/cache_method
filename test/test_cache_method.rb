@@ -444,5 +444,11 @@ class TestCacheMethod < Test::Unit::TestCase
     a.echo('hi')
     assert a.cache_method_cached?(:echo, 'hi')
     assert !a.cache_method_cached?(:echo, 'there')
+
+    assert !BlogM.cache_method_cached?(:get_latest_entries)
+    assert !BlogM.cache_method_cached?(:get_latest_entries, 'there')
+    BlogM.get_latest_entries
+    assert BlogM.cache_method_cached?(:get_latest_entries)
+    assert !BlogM.cache_method_cached?(:get_latest_entries, 'there')
   end
 end
