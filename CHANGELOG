@@ -1,3 +1,9 @@
+0.2.1 / 2012-03-01
+
+* Enhancements
+
+  * Use user-defined #as_cache_key for both obj and args digests (cache keys); previously it was only used for obj
+
 0.2.0 / 2012-02-29
 
 * API changes:
