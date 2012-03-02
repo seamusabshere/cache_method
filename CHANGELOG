@@ -3,6 +3,7 @@
 * Enhancements
 
   * Class name is now force-prepended to the result of #as_cache_key. This prevents objects of different classes that have the same #as_cache_key from being confused with each other. In any case, this sort of duck typing (?) doesn't seem appropriate for cache keys.
+  * Enable "debug mode" by requiring "cache_method/debug"... it helps you find cache keys that are suspiciously long (and therefore slow to digest).
 
 0.2.1 / 2012-03-01
 
