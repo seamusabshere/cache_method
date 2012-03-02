@@ -16,7 +16,7 @@ module CacheMethod
             memo
           end
         else
-          obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj
+          obj.respond_to?(:as_cache_key) ? [obj.class.name, obj.as_cache_key] : obj
         end
       end
     end

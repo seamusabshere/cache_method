@@ -44,6 +44,27 @@ And clear them too
 
 (which doesn't delete the rest of your cache)
 
+## ActiveRecord
+
+If you're caching methods ActiveRecord objects (aka instances of `ActiveRecord::Base`), then you should probably define something like:
+
+    class ActiveRecord::Base
+      def as_cache_key
+        attributes
+      end
+    end
+
+Otherwise the full object will be marshal dumped **just to get a cache key**.
+
+## Debug
+
+CacheMethod can warn you if your obj or args cache keys are suspiciously long.
+
+    require 'cache_method'
+    require 'cache_method/debug'
+
+Then watch your logs.
+
 ## Configuration (and supported cache clients)
 
 You need to set where the cache will be stored:

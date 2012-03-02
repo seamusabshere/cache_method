@@ -182,3 +182,15 @@ class DontMarshalMe < Struct.new(:message)
     message
   end
 end
+
+class DrJekyll
+  def as_cache_key
+    'just a guy'
+  end
+end
+
+class MrHyde
+  def as_cache_key
+    'just a guy'
+  end
+end

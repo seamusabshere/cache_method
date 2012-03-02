@@ -451,4 +451,25 @@ class TestCacheMethod < Test::Unit::TestCase
     assert BlogM.cache_method_cached?(:get_latest_entries)
     assert !BlogM.cache_method_cached?(:get_latest_entries, 'there')
   end
+
+  def test_class_name_automatically_appended_to_cache_key
+    jek = DrJekyll.new
+    hyde = MrHyde.new
+
+    assert_equal jek.as_cache_key, hyde.as_cache_key
+
+    a = CopyCat1.new 'mimo'
+
+    a.ack(jek)
+    assert_equal 1, a.ack_count
+
+    a.ack(hyde)
+    assert_equal 2, a.ack_count
+
+    a.ack(jek)
+    assert_equal 2, a.ack_count
+
+    a.ack(hyde)
+    assert_equal 2, a.ack_count
+  end
 end
