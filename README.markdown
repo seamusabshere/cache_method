@@ -54,6 +54,17 @@ If you're caching methods ActiveRecord objects (aka instances of `ActiveRecord::
       end
     end
 
+If you find yourself passing association proxies as arguments to cached methods, this might be helpful:
+
+    user = User.first
+    Foo.bar(user.groups) # you're passing an association as an argument
+
+    class ActiveRecord::Associations::AssociationCollection
+      def as_cache_key
+        @finder_sql
+      end
+    end
+
 Otherwise the full object will be marshal dumped **just to get a cache key**.
 
 ## Debug
