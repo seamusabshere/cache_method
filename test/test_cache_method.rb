@@ -317,6 +317,13 @@ class TestCacheMethod < Test::Unit::TestCase
     end
   end
 
+  def test_to_cache_key
+    assert_raises(RuntimeError, /Used to_cache_key/) do
+      a = CopyCat1b.new 'mimo'
+      a.echo 'hi'
+    end
+  end
+
   def test_method_added_by_extension
     assert_equal 'hi', CopyCat2.say('hi')
     assert_equal 1, CopyCat2.say_count

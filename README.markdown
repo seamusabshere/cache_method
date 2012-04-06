@@ -54,19 +54,6 @@ If you're caching methods ActiveRecord objects (aka instances of `ActiveRecord::
       end
     end
 
-If you find yourself passing association proxies as arguments to cached methods, this might be helpful:
-
-    user = User.first
-    Foo.bar(user.groups) # you're passing an association as an argument
-
-    class ActiveRecord::Associations::AssociationCollection
-      def as_cache_key
-        @finder_sql
-      end
-    end
-
-Otherwise the full object will be marshal dumped **just to get a cache key**.
-
 ## Debug
 
 CacheMethod can warn you if your obj or args cache keys are suspiciously long.
@@ -92,7 +79,7 @@ or this might even work...
 
 See `Config` for the full list of supported caches.
 
-== Defining a #as_cache_key method
+## Defining a #as_cache_key method
 
 Since we're not pure functional programmers, sometimes cache hits depend on object state in addition to method arguments. To illustrate:
 
@@ -109,6 +96,25 @@ get_latest_entries doesn't take any arguments, so it must depend on my_blog.url 
     end
 
 If you don't define `#as_cache_key`, then `cache_method` will `Marshal.dump` an instance.
+
+## Danger: #to_cache_key
+
+Let's say you want need cache keys from classes that undefine the `#class` method (how annoying). You can define `#to_cache_key`, but **make sure it identifies the class too!** (in addition to the instance.)
+
+For example, if you find yourself passing association proxies as arguments to cached methods, this might be helpful:
+
+    user = User.first
+    Foo.bar(user.groups) # you're passing an association as an argument
+
+    class ActiveRecord::Associations::AssociationCollection
+      # danger! this is a special case... try to use #as_cache_key instead
+      # also note that this example is based on ActiveRecord 3.0.10 ... YMMV
+      def to_cache_key
+        [ proxy_owner.class.name, proxy_owner.id, proxy_reflection.name, conditions ].join('/')
+      end
+    end
+
+Otherwise, `cache_method` will try to run `user.groups.class` which causes the proxy to be loaded. You probably don't want to load 1000 AR objects just to generate a cache key.
 
 ## Module methods
 

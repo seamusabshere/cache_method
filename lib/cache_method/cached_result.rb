@@ -16,7 +16,14 @@ module CacheMethod
             memo
           end
         else
-          obj.respond_to?(:as_cache_key) ? [obj.class.name, obj.as_cache_key] : obj
+          if obj.respond_to?(:to_cache_key)
+            # this is meant to be used sparingly, usually when a proxy class is involved
+            obj.to_cache_key
+          elsif obj.respond_to?(:as_cache_key)
+            [obj.class.name, obj.as_cache_key]
+          else
+            obj
+          end
         end
       end
     end

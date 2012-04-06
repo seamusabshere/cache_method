@@ -1,3 +1,9 @@
+0.2.3 / 2012-04-06
+
+* Enhancements
+
+  * Make it possible to work with proxies by defining #to_cache_key which---unlike #as_cache_key---does not cause #class to be run
+
 0.2.2 / 2012-03-02
 
 * Enhancements

@@ -55,6 +55,15 @@ class CopyCat1a < CopyCat1
   end
 end
 
+class CopyCat1b < CopyCat1
+  def as_cache_key
+    raise "Used as_cache_key"
+  end
+  def to_cache_key
+    raise "Used to_cache_key"
+  end
+end
+
 module Say
   def say_count
     @say_count ||= 0
