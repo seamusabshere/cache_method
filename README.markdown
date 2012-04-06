@@ -110,7 +110,7 @@ For example, if you find yourself passing association proxies as arguments to ca
       # danger! this is a special case... try to use #as_cache_key instead
       # also note that this example is based on ActiveRecord 3.0.10 ... YMMV
       def to_cache_key
-        [ proxy_owner.class.name, proxy_owner.id, proxy_reflection.name, conditions ].join('/')
+        [ 'ActiveRecord::Associations::AssociationCollection', proxy_owner.class.name, proxy_owner.id, proxy_reflection.name, conditions ].join('/')
       end
     end
 
