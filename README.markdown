@@ -6,7 +6,10 @@ Lets you cache the results of calling methods given their arguments. Like memoiz
 
 ## Real-world usage
 
-In production use at [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com) and [reference data web service](http://data.brighterplanet.com).
+![Brighter Planet](http://static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png)
+
+* [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
+* [Brighter Planet's reference data web service](http://data.brighterplanet.com)
 
 ## Rationale
 
