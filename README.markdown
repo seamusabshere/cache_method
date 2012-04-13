@@ -8,6 +8,8 @@ Lets you cache the results of calling methods given their arguments. Like memoiz
 
 <p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
 
+We use `cache_method` for [data science at Brighter Planet](http://brighterplanet.com/research) and in production at
+
 * [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
 * [Brighter Planet's reference data web service](http://data.brighterplanet.com)
 
