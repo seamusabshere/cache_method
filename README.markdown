@@ -6,28 +6,30 @@ Lets you cache the results of calling methods given their arguments. Like memoiz
 
 ## Real-world usage
 
-In production use at [impact.brighterplanet.com](http://impact.brighterplanet.com) and [data.brighterplanet.com](http://data.brighterplanet.com).
+In production use at [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com) and [reference data web service](http://data.brighterplanet.com).
+
+## Rationale
+
+* It should be easy to cache instance methods
+* It should be easy to cache methods that depend on object state
+* It should be easy to uncache a method without clearing the whole cache
+* It should be easy to do all that using a default in-process store, memcached, dalli (if you're on heroku), redis, etc. (all supported by this gem through the [cache gem](https://rubygems.org/gems/cache))
 
 ## Example
 
     require 'cache_method'
     class Blog
-      attr_reader :name
-      attr_reader :url
-
+      attr_reader :name, :url
       def initialize(name, url)
         @name = name
         @url = url
       end
-
-      def get_latest_entries
+      # The slow method that you want to speed up
+      def entries(date)
         # ...
       end
-      cache_method :get_latest_entries
-
-      # By default, cache_method derives the cache key for an instance by getting the SHA1 hash of the Marshal.dump
-      # If you need to customize how an instance is recognized, you can define #as_cache_key.
-      # Marshal.load will be called on the result.
+      cache_method :entries
+      # Not always required
       def as_cache_key
         { :name => name, :url => url }
       end
@@ -35,37 +37,20 @@ In production use at [impact.brighterplanet.com](http://impact.brighterplanet.co
 
 Then you can do
 
-    my_blog.get_latest_entries => first time won't be cached
-    my_blog.get_latest_entries => second time will come from cache
+    my_blog.entries(Date.today) => first time won't be cached
+    my_blog.entries(Date.today) => second time will come from cache
 
 And clear them too
 
-    my_blog.cache_method_clear :get_latest_entries
+    my_blog.cache_method_clear :entries
 
 (which doesn't delete the rest of your cache)
 
-## ActiveRecord
-
-If you're caching methods ActiveRecord objects (aka instances of `ActiveRecord::Base`), then you should probably define something like:
-
-    class ActiveRecord::Base
-      def as_cache_key
-        attributes
-      end
-    end
-
-## Debug
-
-CacheMethod can warn you if your obj or args cache keys are suspiciously long.
-
-    require 'cache_method'
-    require 'cache_method/debug'
-
-Then watch your logs.
-
 ## Configuration (and supported cache clients)
 
-You need to set where the cache will be stored:
+By default, an in-process, non-shared cache is used.
+
+You can set where the cache will be stored:
 
     CacheMethod.config.storage = Memcached.new '127.0.0.1:11211'
 
@@ -79,13 +64,30 @@ or this might even work...
 
 See `Config` for the full list of supported caches.
 
-## Defining a #as_cache_key method
+## Cache keys
 
-Since we're not pure functional programmers, sometimes cache hits depend on object state in addition to method arguments. To illustrate:
+Caching a method involves getting cache keys for
 
-    my_blog.get_latest_entries
+1. the object where the method is defined - for example, `my_blog.as_cache_key`
+2. the arguments passed to the method - for example, `Marshal.dump(Date.today)`, because `Date#as_cache_key` is not defined
 
-get_latest_entries doesn't take any arguments, so it must depend on my_blog.url or something. This works because we define:
+Then the cache keys are SHA-1 hashed and combined for an overall key:
+
+    method signature + obj digest                                                                           + args digest
+    Blog#entries     + SHA1(Marshal.dump({:name="Seamus's blog",:url=>"http://numbers.brighterplanet.com"}) + SHA1(Marshal.dump(Date.today))
+
+Technically the full cache key is
+
+    # when caching class methods
+    method signature + generation + args digest
+    # when caching instance methods
+    method signature + obj digest + generation + args digest
+
+(see "Generational caching" below for an explanation of the generation part)
+
+### #as_cache_key
+
+As above, you can define a custom cache key for an object:
 
     class Blog
       # [...]
@@ -95,26 +97,97 @@ get_latest_entries doesn't take any arguments, so it must depend on my_blog.url 
       # [...]
     end
 
-If you don't define `#as_cache_key`, then `cache_method` will `Marshal.dump` an instance.
+If you don't define `#as_cache_key`, the default is to `Marshal.dump` the whole object. (That's not as terrible as it seems - marshalling is fast!)
 
-## Danger: #to_cache_key
+### #to_cache_key (danger!)
 
-Let's say you want need cache keys from classes that undefine the `#class` method (how annoying). You can define `#to_cache_key`, but **make sure it identifies the class too!** (in addition to the instance.)
+There's another way to define a cache key, but it should be used with caution because it gives you total control.
 
-For example, if you find yourself passing association proxies as arguments to cached methods, this might be helpful:
+The key is to make sure your `#to_cache_key` method identifies both the class and the instance!
 
-    user = User.first
-    Foo.bar(user.groups) # you're passing an association as an argument
+### Comparison
 
-    class ActiveRecord::Associations::AssociationCollection
-      # danger! this is a special case... try to use #as_cache_key instead
-      # also note that this example is based on ActiveRecord 3.0.10 ... YMMV
-      def to_cache_key
-        [ 'ActiveRecord::Associations::AssociationCollection', proxy_owner.class.name, proxy_owner.id, proxy_reflection.name, conditions ].join('/')
+<table>
+  <tr>
+    <th>Method</th>
+    <th>Must uniquely identify class</th>
+    <th>Must uniquely identify instance</th>
+  </tr>
+  <tr>
+    <td><code>#as_cache_key</code></td>
+    <td>N&dagger;</td>
+    <td>Y</td>
+  </tr>
+  <tr>
+    <td><code>#to_cache_key</code></td>
+    <td>Y</td>
+    <td>Y</td>
+  </tr>
+</table>
+
+&dagger; The class name is automatically inserted for you by calling `object.class.name`, which is what causes all the trouble with `ActiveRecord::Associations::CollectionProxy`, etc.
+
+## ActiveRecord
+
+If you're caching methods on instances of `ActiveRecord::Base`, and/or using them as arguments to other cached methods, then you should probably define something like:
+
+    class ActiveRecord::Base
+      def as_cache_key
+        attributes
       end
     end
 
-Otherwise, `cache_method` will try to run `user.groups.class` which causes the proxy to be loaded. You probably don't want to load 1000 AR objects just to generate a cache key.
+If you find yourself passing association proxies as arguments to cached methods, this might be helpful:
+
+    # For use in ActiveRecord 3.0.x
+    class ActiveRecord::Associations::AssociationCollection
+      # rare use of to_cache_key
+      def to_cache_key
+        [
+          'ActiveRecord::Associations::AssociationCollection',
+          proxy_owner.class.name,
+          proxy_owner.id,
+          proxy_reflection.name,
+          conditions
+        ].join('/')
+      end
+    end
+
+    # For use in ActiveRecord 3.2.x
+    class ActiveRecord::Associations::CollectionProxy
+      # rare use of to_cache_key
+      def to_cache_key
+        owner = proxy_association.owner
+        [
+          'ActiveRecord::Associations::CollectionProxy',   # [included because we're using #to_cache_key instead of #as_cache_key ]
+          owner.class.name,                                # User
+          owner.id,                                        # 'seamusabshere'
+          proxy_association.reflection.name,               # :comments
+          scoped.where_sql                                 # "WHERE `comments`.`user_id` = 'seamusabshere'" [maybe a little bit redundant, but play it safe]
+        ].join('/')
+      end
+    end
+
+Otherwise, `cache_method` will call `user.comments.class.name` which causes the proxy to load the target, i.e. load all the Comment objects into memory. You probably don't want to load 1000 AR objects just to generate a cache key.
+
+## Generational caching
+
+Generational caching allows clearing the cached results for only one method, for example
+
+    my_blog.cache_method_clear :entries
+
+You can disable it to get a little speed boost
+
+    CacheMethod.config.generational = false
+
+## Debug
+
+CacheMethod can warn you if your obj or args cache keys are suspiciously long.
+
+    require 'cache_method'
+    require 'cache_method/debug'
+
+Then watch your logs.
 
 ## Module methods
 
@@ -142,13 +215,6 @@ Rest assured that `Tiger.my_module_method` and `Lion.my_module_method` will be c
       # wrong - will raise NameError Exception: undefined method `my_module_method' for class `Tiger'
       # cache_method :my_module_method
     end
-
-## Rationale
-
-* It should be easy to cache a method using memcached, dalli (if you're on heroku), redis, etc. (that's why I made the [cache gem](https://rubygems.org/gems/cache))
-* It should be easy to uncache a method without clearing the whole cache
-* It should be easy to cache instance methods
-* It should be easy to cache methods that depend on object state (hence `#as_cache_key`)
 
 ## Copyright
 
