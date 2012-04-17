@@ -7,3 +7,5 @@ gemspec
 gem 'rake'
 gem 'dalli'
 gem 'yard'
+gem 'minitest'
+gem 'minitest-reporters'

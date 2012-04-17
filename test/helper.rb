@@ -1,18 +1,16 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup
-require 'test/unit'
+require 'bundler/setup'
+require 'minitest/spec'
+require 'minitest/autorun'
+require 'minitest/reporters'
+MiniTest::Unit.runner = MiniTest::SuiteRunner.new
+MiniTest::Unit.runner.reporters << MiniTest::Reporters::SpecReporter.new
 
 if ::Bundler.definition.specs['ruby-debug19'].first or ::Bundler.definition.specs['ruby-debug'].first
   require 'ruby-debug'
 end
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'cache_method'
-
-class Test::Unit::TestCase
-end
 
 class CopyCat1
   attr_reader :name

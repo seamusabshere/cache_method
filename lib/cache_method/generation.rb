@@ -1,49 +1,49 @@
-require 'digest/sha1'
 module CacheMethod
   class Generation #:nodoc: all
-    class << self
-      def random_name
-        rand(100_000_000).to_s
-      end
-    end
-
     def initialize(obj, method_id)
       @obj = obj
       @method_id = method_id
+      @method_signature = CacheMethod.method_signature obj, method_id
+      @fetch_mutex = ::Mutex.new
     end
     
     attr_reader :obj
     attr_reader :method_id
-    
-    def method_signature
-      @method_signature ||= ::CacheMethod.method_signature(obj, method_id)
-    end
-    
-    def obj_digest
-      @obj_digest ||= ::Digest::SHA1.hexdigest(::Marshal.dump(obj.respond_to?(:as_cache_key) ? obj.as_cache_key : obj))
-    end
-    
-    def cache_key
-      if obj.is_a?(::Class) or obj.is_a?(::Module)
-        [ 'CacheMethod', 'Generation', method_signature ].join ','
+    attr_reader :method_signature
+        
+    def fetch
+      if existing = get
+        existing
       else
-        [ 'CacheMethod', 'Generation', method_signature, obj_digest ].join ','
-      end
-    end
-    
-    def current
-      if cached_v = Config.instance.storage.get(cache_key)
-        cached_v
-      else
-        v = Generation.random_name
-        # never expire!
-        Config.instance.storage.set cache_key, v, 0
-        v
+        @fetch_mutex.synchronize do
+          get || set
+        end
       end
     end
     
     def mark_passing
-      Config.instance.storage.delete cache_key
+      CacheMethod.config.storage.delete cache_key
+    end
+
+    private
+
+    def cache_key
+      if obj.is_a?(::Class) or obj.is_a?(::Module)
+        [ 'CacheMethod', 'Generation', method_signature ].join CACHE_KEY_JOINER
+      else
+        [ 'CacheMethod', 'Generation', method_signature, CacheMethod.digest(obj) ].join CACHE_KEY_JOINER
+      end
+    end
+
+    def get
+      CacheMethod.config.storage.get cache_key
+    end
+
+    def set
+      random_name = ::Kernel.rand(1e11).to_s
+      # never expire!
+      CacheMethod.config.storage.set cache_key, random_name, 0
+      random_name
     end
   end
 end

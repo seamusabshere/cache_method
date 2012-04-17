@@ -1,23 +1,59 @@
+require 'thread'
+require 'digest/sha1'
+
 require 'cache_method/config'
 require 'cache_method/cached_result'
 require 'cache_method/generation'
 
-# See the README.rdoc for more info!
 module CacheMethod
-  def self.config #:nodoc:
-    Config.instance
+  MUTEX = ::Mutex.new
+  CACHE_KEY_JOINER = ','
+
+  def CacheMethod.config #:nodoc:
+    @config || MUTEX.synchronize do
+      @config ||= Config.new
+    end
   end
   
-  def self.klass_name(obj) #:nodoc:
+  def CacheMethod.klass_name(obj) #:nodoc:
     (obj.is_a?(::Class) or obj.is_a?(::Module)) ? obj.to_s : obj.class.to_s
   end
   
-  def self.method_delimiter(obj) #:nodoc:
+  def CacheMethod.method_delimiter(obj) #:nodoc:
     (obj.is_a?(::Class) or obj.is_a?(::Module)) ? '.' : '#'
   end
   
-  def self.method_signature(obj, method_id) #:nodoc:
+  def CacheMethod.method_signature(obj, method_id) #:nodoc:
     [ klass_name(obj), method_id ].join method_delimiter(obj)
+  end
+
+  def CacheMethod.resolve_cache_key(obj)
+    case obj
+    when ::Array
+      obj.map do |v|
+        resolve_cache_key v
+      end
+    when ::Hash
+      obj.inject({}) do |memo, (k, v)|
+        kk = resolve_cache_key k
+        vv = resolve_cache_key v
+        memo[kk] = vv
+        memo
+      end
+    else
+      if obj.respond_to?(:to_cache_key)
+        # this is meant to be used sparingly, usually when a proxy class is involved
+        obj.to_cache_key
+      elsif obj.respond_to?(:as_cache_key)
+        [obj.class.name, obj.as_cache_key]
+      else
+        obj
+      end
+    end
+  end
+
+  def CacheMethod.digest(obj)
+    ::Digest::SHA1.hexdigest ::Marshal.dump(resolve_cache_key(obj))
   end
     
   # All Objects, including instances and Classes, get the <tt>#cache_method_clear</tt> method.
@@ -59,15 +95,13 @@ module CacheMethod
     def cache_method(method_id, ttl = nil)
       original_method_id = "_uncached_#{method_id}"
       alias_method original_method_id, method_id
-      define_method method_id do |*args|
-        ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args).fetch
+      define_method method_id do |*args, &blk|
+        ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args, &blk).fetch
       end
     end
   end
 end
 
-unless ::Object.method_defined? :cache_method
-  ::Object.send :include, ::CacheMethod::InstanceMethods
-  ::Class.send :include, ::CacheMethod::ClassMethods
-  ::Module.send :include, ::CacheMethod::ClassMethods
-end
+::Object.send :include, ::CacheMethod::InstanceMethods
+::Class.send :include, ::CacheMethod::ClassMethods
+::Module.send :include, ::CacheMethod::ClassMethods

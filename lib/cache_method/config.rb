@@ -1,5 +1,5 @@
 require 'cache'
-require 'singleton'
+
 module CacheMethod
   # Here's where you set config options.
   #
@@ -9,7 +9,10 @@ module CacheMethod
   #
   # You'd probably put this in your Rails config/initializers, for example.
   class Config
-    include ::Singleton
+
+    def initialize
+      @mutex = ::Mutex.new
+    end
     
     # Whether to use "generational" caching. Default is true.
     #
@@ -44,7 +47,9 @@ module CacheMethod
     end
 
     def storage #:nodoc:
-      @storage ||= ::Cache.new
+      @storage || @mutex.synchronize do
+        @storage ||= ::Cache.new
+      end
     end
     
     # TTL for method caches. Defaults to 24 hours or 86,400 seconds.
