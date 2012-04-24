@@ -26,8 +26,18 @@ module CacheMethod
       if wrapped_v = get_wrapped
         wrapped_v.first
       else
-        @fetch_mutex.synchronize do
-          (get_wrapped || set_wrapped).first
+        if @fetch_mutex.try_lock
+          # i got the lock, so don't bother trying to get first
+          begin
+            set_wrapped.first
+          ensure
+            @fetch_mutex.unlock
+          end
+        else
+          # i didn't get the lock, so get in line, and do try to get first
+          @fetch_mutex.synchronize do
+            (get_wrapped || set_wrapped).first
+          end
         end
       end
     end
