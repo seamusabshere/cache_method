@@ -3,6 +3,7 @@ unreleased
 * Enhancements
 
   * If you immediately obtain the fetch mutex, don't double-get because for all you know you're the first setter
+  * Better debug logging (require 'cache_method/debug')
 
 0.2.4 / 2012-04-17
 
