@@ -1,7 +1,7 @@
 module CacheMethod
   def CacheMethod.digest(obj)
     if (l = ::Marshal.dump(resolve_cache_key(obj)).length) > 500
-      $stderr.puts "[cache_method] DIGEST (long?): #{resolve_cache_key(obj).inspect}"
+      $stderr.puts "[cache_method] DIGEST (l = #{l}): #{resolve_cache_key(obj).inspect}"
     end
     ::Digest::SHA1.hexdigest ::Marshal.dump(resolve_cache_key(obj))
   end
@@ -21,8 +21,8 @@ module CacheMethod
 
     def debug_set_wrapped
       retval = original_set_wrapped
-      if (l = ::Marshal.dump(retval).length > 1000)
-        $stderr.puts "[cache_method] SET (long?): #{method_signature}(#{args.inspect}) -> #{retval.inspect}"
+      if (l = ::Marshal.dump(retval).length) > 1000
+        $stderr.puts "[cache_method] SET (l = #{l}): #{method_signature}(#{args.inspect}) -> #{retval.inspect}"
       else
         # $stderr.puts "[cache_method] SET: #{method_signature}(#{args.inspect})"
       end
