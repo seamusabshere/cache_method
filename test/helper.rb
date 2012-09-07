@@ -2,12 +2,9 @@ require 'rubygems'
 require 'bundler/setup'
 require 'minitest/spec'
 require 'minitest/autorun'
-require 'minitest/reporters'
-MiniTest::Unit.runner = MiniTest::SuiteRunner.new
-MiniTest::Unit.runner.reporters << MiniTest::Reporters::SpecReporter.new
-
-if ::Bundler.definition.specs['ruby-debug19'].first or ::Bundler.definition.specs['ruby-debug'].first
-  require 'ruby-debug'
+if RUBY_VERSION >= '1.9'
+  require 'minitest/reporters'
+  MiniTest::Reporters.use! MiniTest::Reporters::SpecReporter.new
 end
 
 require 'cache_method'
