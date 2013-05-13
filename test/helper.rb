@@ -63,11 +63,11 @@ module Say
   def say_count
     @say_count ||= 0
   end
-  
+
   def say_count=(x)
     @say_count = x
   end
-  
+
   def say(msg)
     self.say_count += 1
     msg
@@ -120,6 +120,14 @@ class Blog1
     ["voo vaa #{name}"]
   end
   cache_method :get_latest_entries2, 1 # second
+  def update_entries param
+    if block_given?
+      yield param
+    else
+      param
+    end
+  end
+  cache_method_clear_on :update_entries, :get_latest_entries
   def as_cache_key
     { :name => name, :url => url }
   end
