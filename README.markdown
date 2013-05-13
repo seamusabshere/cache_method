@@ -24,17 +24,29 @@ We use `cache_method` for [data science at Brighter Planet](http://brighterplane
 
     require 'cache_method'
     class Blog
+
       attr_reader :name, :url
+
       def initialize(name, url)
         @name = name
         @url = url
       end
-      # The slow method that you want to speed up
+
       def entries(date)
         # ...
       end
+
+      # cache that slow method!
       cache_method :entries
-      # Not always required
+
+      def update(stuff)
+        # ...
+      end
+
+      # automatically clear cache for #entries when #update is called...
+      cache_method_clear_on :update, :entries
+
+      # custom cache key - not always required!
       def as_cache_key
         { :name => name, :url => url }
       end
@@ -220,6 +232,11 @@ Rest assured that `Tiger.my_module_method` and `Lion.my_module_method` will be c
       # wrong - will raise NameError Exception: undefined method `my_module_method' for class `Tiger'
       # cache_method :my_module_method
     end
+
+## Contributors
+
+* [Seamus Abshere](https://github.com/seamusabshere)
+* [Rubem Nakamura](https://github.com/rubemz)
 
 ## Copyright
 
