@@ -14,15 +14,15 @@ module CacheMethod
       @config ||= Config.new
     end
   end
-  
+
   def CacheMethod.klass_name(obj) #:nodoc:
     (obj.is_a?(::Class) or obj.is_a?(::Module)) ? obj.to_s : obj.class.to_s
   end
-  
+
   def CacheMethod.method_delimiter(obj) #:nodoc:
     (obj.is_a?(::Class) or obj.is_a?(::Module)) ? '.' : '#'
   end
-  
+
   def CacheMethod.method_signature(obj, method_id) #:nodoc:
     [ klass_name(obj), method_id ].join method_delimiter(obj)
   end
@@ -55,7 +55,7 @@ module CacheMethod
   def CacheMethod.digest(obj)
     ::Digest::SHA1.hexdigest ::Marshal.dump(resolve_cache_key(obj))
   end
-    
+
   # All Objects, including instances and Classes, get the <tt>#cache_method_clear</tt> method.
   module InstanceMethods
     # Clear the cache for a particular method.
@@ -97,6 +97,30 @@ module CacheMethod
       alias_method original_method_id, method_id
       define_method method_id do |*args, &blk|
         ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args, &blk).fetch
+      end
+    end
+
+    # Clear a cache method once another method is called. Useful in situations where
+    # you want to clear a cache whenever another method is callled, commonly
+    # an update.
+    #
+    # Example:
+    #     class Blog
+    #       def get_latest_entries
+    #         # [...]
+    #       end
+    #       def update_entries
+    #         # update happens
+    #       end
+    #       cache_method_clear_on :update_entries, :get_latest_entries
+    #     end
+    def cache_method_clear_on(method_id, cache_method_clear_id)
+      original_method_id = "_original_#{method_id}"
+      alias_method original_method_id, method_id
+
+      define_method method_id do |*args, &blk|
+        cache_method_clear cache_method_clear_id
+        send(original_method_id, *args, &blk)
       end
     end
   end

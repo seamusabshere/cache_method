@@ -197,7 +197,21 @@ describe CacheMethod do
     a = new_instance_of_my_blog
     a.get_latest_entries.must_equal ["hello from #{a.name}"]
     a.request_count.must_equal 1
+    a.get_latest_entries.must_equal ["hello from #{a.name}"]
+    a.request_count.must_equal 1
     a.cache_method_clear :get_latest_entries
+    a.get_latest_entries.must_equal ["hello from #{a.name}"]
+    a.request_count.must_equal 2
+  end
+
+  it %{cache_method_clear_on} do
+    a = new_instance_of_my_blog
+    a.get_latest_entries.must_equal ["hello from #{a.name}"]
+    a.request_count.must_equal 1
+    a.update_entries("param").must_equal("param")
+    a.update_entries(1) {|param| param + 1}.must_equal(2)
+    a.get_latest_entries.must_equal ["hello from #{a.name}"]
+    a.request_count.must_equal 2
     a.get_latest_entries.must_equal ["hello from #{a.name}"]
     a.request_count.must_equal 2
   end
