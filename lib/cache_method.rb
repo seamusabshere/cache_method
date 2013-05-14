@@ -93,7 +93,7 @@ module CacheMethod
     #       cache_method :get_latest_entries
     #     end
     def cache_method(method_id, ttl = nil)
-      original_method_id = "_uncached_#{method_id}"
+      original_method_id = "_cache_method_#{method_id}"
       alias_method original_method_id, method_id
       define_method method_id do |*args, &blk|
         ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args, &blk).fetch
@@ -115,7 +115,7 @@ module CacheMethod
     #       cache_method_clear_on :update_entries, :get_latest_entries
     #     end
     def cache_method_clear_on(method_id, cache_method_clear_id)
-      original_method_id = "_original_#{method_id}"
+      original_method_id = "_cache_method_clear_on_#{method_id}"
       alias_method original_method_id, method_id
 
       define_method method_id do |*args, &blk|
