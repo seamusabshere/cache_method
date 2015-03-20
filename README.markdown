@@ -197,6 +197,10 @@ You can disable it to get a little speed boost
 
     CacheMethod.config.generational = false
 
+Generational caching stores a separate generation key that never expires by default. To set a default TTL for these
+
+    CacheMethod.config.default_generational_ttl = 120
+
 ## Debug
 
 CacheMethod can warn you if your obj or args cache keys are suspiciously long.

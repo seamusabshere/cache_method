@@ -63,5 +63,17 @@ module CacheMethod
     def default_ttl #:nodoc:
       @default_ttl || 86_400
     end
+
+    # TTL for method generational caches. Defaults to 0 (never).
+    #
+    # Example:
+    #     CacheMethod.config.default_generational_ttl = 120 # seconds
+    def default_generational_ttl=(seconds)
+      @default_generational_ttl = seconds
+    end
+
+    def default_generational_ttl #:nodoc:
+      @default_generational_ttl || 0
+    end
   end
 end

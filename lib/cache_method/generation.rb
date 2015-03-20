@@ -41,8 +41,7 @@ module CacheMethod
 
     def set
       random_name = ::Kernel.rand(1e11).to_s
-      # never expire!
-      CacheMethod.config.storage.set cache_key, random_name, 0
+      CacheMethod.config.storage.set cache_key, random_name, CacheMethod.config.default_generational_ttl
       random_name
     end
   end
