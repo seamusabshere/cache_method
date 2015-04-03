@@ -127,7 +127,7 @@ class Blog1
       param
     end
   end
-  cache_method_clear_on :update_entries, :get_latest_entries
+  cache_method_clear_on :update_entries, :get_latest_entries, :get_latest_entries2
   def as_cache_key
     { :name => name, :url => url }
   end

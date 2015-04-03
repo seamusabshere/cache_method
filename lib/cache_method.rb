@@ -104,6 +104,9 @@ module CacheMethod
     # you want to clear a cache whenever another method is callled, commonly
     # an update.
     #
+    # The cache_method_clear_ids are the caches to be cleared. It can be multiple
+    # values.
+    #
     # Example:
     #     class Blog
     #       def get_latest_entries
@@ -114,12 +117,15 @@ module CacheMethod
     #       end
     #       cache_method_clear_on :update_entries, :get_latest_entries
     #     end
-    def cache_method_clear_on(method_id, cache_method_clear_id)
+    def cache_method_clear_on(method_id, *cache_method_clear_ids)
       original_method_id = "_cache_method_clear_on_#{method_id}"
       alias_method original_method_id, method_id
 
       define_method method_id do |*args, &blk|
-        cache_method_clear cache_method_clear_id
+        cache_method_clear_ids.flatten.each do |clear_id|
+          cache_method_clear clear_id
+        end
+
         send(original_method_id, *args, &blk)
       end
     end
