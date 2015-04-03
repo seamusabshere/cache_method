@@ -1,3 +1,9 @@
+0.2.7 / 2015-04-03
+
+* Enhancements
+
+  * CacheMethod.config.default_generational_ttl so that generations can expire - thanks @itspriddle https://github.com/seamusabshere/cache_method/pull/10
+
 0.2.6 / 2013-05-13
 
 * Enhancements
