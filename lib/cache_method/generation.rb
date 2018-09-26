@@ -1,16 +1,18 @@
 module CacheMethod
   class Generation #:nodoc: all
-    def initialize(obj, method_id)
+    def initialize(obj, method_id, storage)
       @obj = obj
       @method_id = method_id
+      @storage = storage
       @method_signature = CacheMethod.method_signature obj, method_id
       @fetch_mutex = ::Mutex.new
     end
-    
+
     attr_reader :obj
     attr_reader :method_id
+    attr_reader :storage
     attr_reader :method_signature
-        
+
     def fetch
       if existing = get
         existing
@@ -20,9 +22,9 @@ module CacheMethod
         end
       end
     end
-    
+
     def mark_passing
-      CacheMethod.config.storage.delete cache_key
+      @storage.delete cache_key
     end
 
     private
@@ -36,12 +38,12 @@ module CacheMethod
     end
 
     def get
-      CacheMethod.config.storage.get cache_key
+      @storage.get cache_key
     end
 
     def set
       random_name = ::Kernel.rand(1e11).to_s
-      CacheMethod.config.storage.set cache_key, random_name, CacheMethod.config.default_generational_ttl
+      @storage.set cache_key, random_name, CacheMethod.config.default_generational_ttl
       random_name
     end
   end

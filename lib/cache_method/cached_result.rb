@@ -1,6 +1,6 @@
 module CacheMethod
   class CachedResult #:nodoc: all
-    def initialize(obj, method_id, original_method_id, ttl, args, &blk)
+    def initialize(obj, method_id, original_method_id, ttl, args, storage_name, &blk)
       @obj = obj
       @method_id = method_id
       @method_signature = CacheMethod.method_signature obj, method_id
@@ -8,6 +8,7 @@ module CacheMethod
       @ttl = ttl || CacheMethod.config.default_ttl
       @args = args
       @args_digest = args.empty? ? 'empty' : CacheMethod.digest(args)
+      @storage = CacheMethod.config.storages[storage_name]
       @blk = blk
       @fetch_mutex = ::Mutex.new
     end
@@ -18,9 +19,10 @@ module CacheMethod
     attr_reader :original_method_id
     attr_reader :args
     attr_reader :args_digest
+    attr_reader :storage
     attr_reader :blk
     attr_reader :ttl
-    
+
     # Store things wrapped in an Array so that nil is accepted
     def fetch
       if wrapped_v = get_wrapped
@@ -43,9 +45,9 @@ module CacheMethod
     end
 
     def exist?
-      CacheMethod.config.storage.exist?(cache_key)
+      @storage.exist?(cache_key)
     end
-        
+
     private
 
     def cache_key
@@ -63,13 +65,13 @@ module CacheMethod
     end
 
     def get_wrapped
-      CacheMethod.config.storage.get cache_key
+      @storage.get cache_key
     end
 
     def set_wrapped
       v = obj.send(*([original_method_id]+args), &blk)
       wrapped_v = [v]
-      CacheMethod.config.storage.set cache_key, wrapped_v, ttl
+      @storage.set cache_key, wrapped_v, ttl
       wrapped_v
     end
   end
