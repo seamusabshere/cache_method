@@ -1,4 +1,4 @@
-require 'helper'
+require_relative 'helper'
 
 require 'dalli'
 
@@ -181,6 +181,20 @@ describe CacheMethod do
     end
   end
 
+  it %{cache_class_method_with_kwargs} do
+    a = CopyCat3.new 'mimo'
+
+    a.echo('hi', 'there', kw1: 'a', kw2: 'b').must_equal({ args: ['hi', 'there'], kwargs: {kw1: 'a', kw2: 'b'} })
+    a.echo_count.must_equal 1
+
+    a.echo('hi', 'there', kw1: 'a', kw2: 'b').must_equal({ args: ['hi', 'there'], kwargs: {kw1: 'a', kw2: 'b'} })
+    a.echo_count.must_equal 1
+
+    # ensure kwargs are part of key
+    a.echo('hi', 'there', kw1: 'c', kw2: 'd').must_equal({ args: ['hi', 'there'], kwargs: {kw1: 'c', kw2: 'd'} })
+    a.echo_count.must_equal 2
+  end
+
   it %{cache_instance_method} do
     a = new_instance_of_my_blog
     a.get_latest_entries.must_equal ["hello from #{a.name}"]
@@ -208,8 +222,9 @@ describe CacheMethod do
     a = new_instance_of_my_blog
     a.get_latest_entries.must_equal ["hello from #{a.name}"]
     a.request_count.must_equal 1
-    a.update_entries("param").must_equal("param")
-    a.update_entries(1) {|param| param + 1}.must_equal(2)
+    a.update_entries("param", kwparam: 'kwparam').must_equal(["param", "kwparam"])
+    a.update_entries(1, kwparam: 'a') {|param, kwparam| param + 1}.must_equal(2)
+    a.update_entries(1, kwparam: 'a') {|param, kwparam| kwparam}.must_equal('a')
     a.get_latest_entries.must_equal ["hello from #{a.name}"]
     a.request_count.must_equal 2
     a.get_latest_entries.must_equal ["hello from #{a.name}"]

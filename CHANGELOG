@@ -1,3 +1,13 @@
+0.3.0 / 2022-10-16
+
+* Enhancements
+
+  * Ruby 3.x support
+
+* Breaking changes
+
+  * Cache key format changed to include kwargs; existing caches will be invalidated on upgrade
+
 0.2.7 / 2015-04-03
 
 * Enhancements

@@ -72,8 +72,8 @@ module CacheMethod
       end
     end
 
-    def cache_method_cached?(method_id, *args)
-      ::CacheMethod::CachedResult.new(self, method_id, nil, nil, args).exist?
+    def cache_method_cached?(method_id, *args, **kwargs)
+      ::CacheMethod::CachedResult.new(self, method_id, nil, nil, args, kwargs).exist?
     end
   end
 
@@ -95,8 +95,8 @@ module CacheMethod
     def cache_method(method_id, ttl = nil)
       original_method_id = "_cache_method_#{method_id}"
       alias_method original_method_id, method_id
-      define_method method_id do |*args, &blk|
-        ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args, &blk).fetch
+      define_method method_id do |*args, **kwargs, &blk|
+        ::CacheMethod::CachedResult.new(self, method_id, original_method_id, ttl, args, kwargs, &blk).fetch
       end
     end
 
@@ -118,9 +118,9 @@ module CacheMethod
       original_method_id = "_cache_method_clear_on_#{method_id}"
       alias_method original_method_id, method_id
 
-      define_method method_id do |*args, &blk|
+      define_method method_id do |*args, **kwargs, &blk|
         cache_method_clear cache_method_clear_id
-        send(original_method_id, *args, &blk)
+        send(original_method_id, *args, **kwargs, &blk)
       end
     end
   end
