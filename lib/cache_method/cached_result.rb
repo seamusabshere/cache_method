@@ -1,13 +1,15 @@
 module CacheMethod
   class CachedResult #:nodoc: all
-    def initialize(obj, method_id, original_method_id, ttl, args, &blk)
+    def initialize(obj, method_id, original_method_id, ttl, args, kwargs, &blk)
       @obj = obj
       @method_id = method_id
       @method_signature = CacheMethod.method_signature obj, method_id
       @original_method_id = original_method_id
       @ttl = ttl || CacheMethod.config.default_ttl
       @args = args
+      @kwargs = kwargs
       @args_digest = args.empty? ? 'empty' : CacheMethod.digest(args)
+      @kwargs_digest = kwargs.empty? ? 'empty' : CacheMethod.digest(kwargs)
       @blk = blk
       @fetch_mutex = ::Mutex.new
     end
@@ -17,10 +19,12 @@ module CacheMethod
     attr_reader :method_signature
     attr_reader :original_method_id
     attr_reader :args
+    attr_reader :kwargs
     attr_reader :args_digest
+    attr_reader :kwargs_digest
     attr_reader :blk
     attr_reader :ttl
-    
+
     # Store things wrapped in an Array so that nil is accepted
     def fetch
       if wrapped_v = get_wrapped
@@ -45,14 +49,14 @@ module CacheMethod
     def exist?
       CacheMethod.config.storage.exist?(cache_key)
     end
-        
+
     private
 
     def cache_key
       if obj.is_a?(::Class) or obj.is_a?(::Module)
-        [ 'CacheMethod', 'CachedResult', method_signature, current_generation, args_digest ].compact.join CACHE_KEY_JOINER
+        [ 'CacheMethod', 'CachedResult', method_signature, current_generation, args_digest, kwargs_digest ].compact.join CACHE_KEY_JOINER
       else
-        [ 'CacheMethod', 'CachedResult', method_signature, CacheMethod.digest(obj), current_generation, args_digest ].compact.join CACHE_KEY_JOINER
+        [ 'CacheMethod', 'CachedResult', method_signature, CacheMethod.digest(obj), current_generation, args_digest, kwargs_digest ].compact.join CACHE_KEY_JOINER
       end
     end
 
@@ -67,7 +71,7 @@ module CacheMethod
     end
 
     def set_wrapped
-      v = obj.send(*([original_method_id]+args), &blk)
+      v = obj.send(*([original_method_id]+args), **kwargs, &blk)
       wrapped_v = [v]
       CacheMethod.config.storage.set cache_key, wrapped_v, ttl
       wrapped_v

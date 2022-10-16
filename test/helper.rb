@@ -99,6 +99,30 @@ class CopyCat2
   end
 end
 
+class CopyCat3
+  attr_reader :name
+  def initialize(name)
+    @name = name
+  end
+  attr_writer :echo_count
+  def echo_count
+    @echo_count ||= 0
+  end
+  def echo(*args, **kwargs)
+    self.echo_count += 1
+    return { args: args, kwargs: kwargs }
+  end
+  attr_writer :ack_count
+  def marshal_dump
+    raise "Used marshal_dump"
+  end
+  def as_cache_key
+    name
+  end
+  cache_method :echo
+end
+
+
 class Blog1
   attr_reader :name
   attr_reader :url
@@ -120,11 +144,11 @@ class Blog1
     ["voo vaa #{name}"]
   end
   cache_method :get_latest_entries2, 1 # second
-  def update_entries param
+  def update_entries param, kwparam:
     if block_given?
-      yield param
+      yield [param, kwparam]
     else
-      param
+      [param, kwparam]
     end
   end
   cache_method_clear_on :update_entries, :get_latest_entries
